@@ -1,0 +1,8 @@
+services:
+  mysql:
+    image: mysql:8.0.30-debian
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=tickets
+    ports:
+      - 33060:3306
