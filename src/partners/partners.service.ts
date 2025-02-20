@@ -4,6 +4,7 @@ import { DataSource, Repository } from 'typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Partner } from './entities/partner.entity';
+import { hashSync } from 'bcrypt';
 
 @Injectable()
 export class PartnersService {
@@ -18,10 +19,11 @@ export class PartnersService {
   async create(createPartnerDto: CreatePartnerDto): Promise<void> {
     const { name, email, password, companyName } = createPartnerDto;
     const createdAt = new Date();
+    const hashedPassword = hashSync(password, 10);
     const user = this.userRepository.create({
       name,
       email,
-      password,
+      password: hashedPassword,
       updatedAt: createdAt,
       createdAt,
     });
