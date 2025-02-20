@@ -6,6 +6,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './users/entities/user.entity';
 import { PartnersModule } from './partners/partners.module';
 import { Partner } from './partners/entities/partner.entity';
+import { CustomersModule } from './customers/customers.module';
+import { Customer } from './customers/entities/customer.entity';
 
 @Module({
   imports: [
@@ -16,11 +18,12 @@ import { Partner } from './partners/entities/partner.entity';
       username: 'root',
       password: 'root',
       database: 'tickets',
-      entities: [User, Partner],
+      entities: [User, Partner, Customer],
       synchronize: true,
     }),
     UsersModule,
     PartnersModule,
+    CustomersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
