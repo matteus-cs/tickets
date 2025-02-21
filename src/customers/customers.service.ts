@@ -27,18 +27,19 @@ export class CustomersService {
       updatedAt: createdAt,
       createdAt,
     });
-    const customer = this.customerRepository.create({
-      address,
-      phone,
-      createdAt,
-      user,
-    });
+
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      await this.dataSource.manager.save(user);
-      await this.dataSource.manager.save(customer);
+      await queryRunner.manager.save(user);
+      const customer = this.customerRepository.create({
+        address,
+        phone,
+        createdAt,
+        user,
+      });
+      await queryRunner.manager.save(customer);
       await queryRunner.commitTransaction();
     } catch (err) {
       await queryRunner.rollbackTransaction();

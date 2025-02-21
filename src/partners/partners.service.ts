@@ -27,17 +27,17 @@ export class PartnersService {
       updatedAt: createdAt,
       createdAt,
     });
-    const partner = this.partnerRepository.create({
-      companyName,
-      createdAt,
-      user,
-    });
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      await this.dataSource.manager.save(user);
-      await this.dataSource.manager.save(partner);
+      await queryRunner.manager.save(user);
+      const partner = this.partnerRepository.create({
+        companyName,
+        createdAt,
+        user,
+      });
+      await queryRunner.manager.save(partner);
       await queryRunner.commitTransaction();
     } catch (err) {
       await queryRunner.rollbackTransaction();
@@ -45,5 +45,12 @@ export class PartnersService {
     } finally {
       await queryRunner.release();
     }
+  }
+
+  async findByUserId(userId: number) {
+    const partner = await this.partnerRepository.findOne({
+      where: { user: { id: userId } },
+    });
+    return partner;
   }
 }

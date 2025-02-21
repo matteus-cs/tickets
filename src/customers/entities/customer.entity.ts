@@ -1,5 +1,11 @@
 import { User } from 'src/users/entities/user.entity';
-import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class Customer {
@@ -16,5 +22,6 @@ export class Customer {
   createdAt: Date;
 
   @OneToOne(() => User)
+  @JoinColumn()
   user: User;
 }

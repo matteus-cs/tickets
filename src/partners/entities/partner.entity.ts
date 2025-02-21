@@ -1,5 +1,14 @@
 import { User } from 'src/users/entities/user.entity';
-import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Event } from 'src/events/entities/event.entity';
+
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class Partner {
@@ -13,5 +22,9 @@ export class Partner {
   createdAt: Date;
 
   @OneToOne(() => User)
+  @JoinColumn()
   user: User;
+
+  @OneToMany(() => Event, (event) => event.partner, { cascade: true })
+  events: Event[];
 }

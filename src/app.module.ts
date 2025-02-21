@@ -9,6 +9,8 @@ import { Partner } from './partners/entities/partner.entity';
 import { CustomersModule } from './customers/customers.module';
 import { Customer } from './customers/entities/customer.entity';
 import { AuthModule } from './auth/auth.module';
+import { EventsModule } from './events/events.module';
+import { Event } from './events/entities/event.entity';
 
 @Module({
   imports: [
@@ -19,13 +21,14 @@ import { AuthModule } from './auth/auth.module';
       username: 'root',
       password: 'root',
       database: 'tickets',
-      entities: [User, Partner, Customer],
+      entities: [User, Partner, Customer, Event],
       synchronize: true,
     }),
     UsersModule,
     PartnersModule,
     CustomersModule,
     AuthModule,
+    EventsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
