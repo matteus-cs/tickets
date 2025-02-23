@@ -1,5 +1,12 @@
 import { Partner } from 'src/partners/entities/partner.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Ticket } from 'src/tickets/entities/ticket.entity';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class Event {
@@ -23,4 +30,7 @@ export class Event {
 
   @ManyToOne(() => Partner, (partner) => partner.events)
   partner: Partner;
+
+  @OneToMany(() => Ticket, (ticket) => ticket.event)
+  tickets: Ticket[];
 }
