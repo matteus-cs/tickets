@@ -10,7 +10,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-@Entity()
+@Entity('partners')
 export class Partner {
   @PrimaryGeneratedColumn()
   id: number;

@@ -16,7 +16,7 @@ export enum EPurchaseStatus {
   CANCELLED = 'cancelled',
 }
 
-@Entity()
+@Entity('purchases')
 export class Purchase {
   @PrimaryGeneratedColumn()
   id: number;

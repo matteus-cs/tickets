@@ -8,7 +8,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-@Entity()
+@Entity('events')
 export class Event {
   @PrimaryGeneratedColumn()
   id: number;

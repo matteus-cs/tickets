@@ -14,7 +14,7 @@ export enum EReservationTicketStatus {
   CANCELLED = 'cancelled',
 }
 
-@Entity()
+@Entity('reservation_tickets')
 @Unique(['reservedTicketId'])
 export class ReservationTicket {
   @PrimaryGeneratedColumn()

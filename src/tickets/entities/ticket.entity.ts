@@ -15,7 +15,7 @@ export enum TicketStatusEnum {
   SOLD = 'sold',
 }
 
-@Entity()
+@Entity('tickets')
 export class Ticket {
   @PrimaryGeneratedColumn()
   id: number;
@@ -23,7 +23,7 @@ export class Ticket {
   @Column()
   location: string;
 
-  @Column({ type: 'decimal' })
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
   price: number;
 
   @Column({
