@@ -13,6 +13,10 @@ import { EventsModule } from './events/events.module';
 import { Event } from './events/entities/event.entity';
 import { TicketsModule } from './tickets/tickets.module';
 import { Ticket } from './tickets/entities/ticket.entity';
+import { PurchasesModule } from './purchases/purchases.module';
+import { Purchase } from './purchases/entities/purchase.entity';
+import { ReservationTicket } from './purchases/entities/reservationTicket.entity';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
@@ -23,7 +27,15 @@ import { Ticket } from './tickets/entities/ticket.entity';
       username: 'root',
       password: 'root',
       database: 'tickets',
-      entities: [User, Partner, Customer, Event, Ticket],
+      entities: [
+        User,
+        Partner,
+        Customer,
+        Event,
+        Ticket,
+        Purchase,
+        ReservationTicket,
+      ],
       synchronize: true,
     }),
     UsersModule,
@@ -32,6 +44,8 @@ import { Ticket } from './tickets/entities/ticket.entity';
     AuthModule,
     EventsModule,
     TicketsModule,
+    PurchasesModule,
+    PaymentModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,8 +1,11 @@
+import { Purchase } from 'src/purchases/entities/purchase.entity';
+import { ReservationTicket } from 'src/purchases/entities/reservationTicket.entity';
 import { User } from 'src/users/entities/user.entity';
 import {
   Column,
   Entity,
   JoinColumn,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -24,4 +27,10 @@ export class Customer {
   @OneToOne(() => User)
   @JoinColumn()
   user: User;
+
+  @OneToMany(() => ReservationTicket, (r) => r.customer)
+  reservations: ReservationTicket[];
+
+  @OneToMany(() => Purchase, (purchase) => purchase.customer)
+  purchases: Purchase[];
 }

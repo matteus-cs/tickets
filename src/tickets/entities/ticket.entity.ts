@@ -1,5 +1,14 @@
 import { Event } from 'src/events/entities/event.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Purchase } from 'src/purchases/entities/purchase.entity';
+import { ReservationTicket } from 'src/purchases/entities/reservationTicket.entity';
+import {
+  Column,
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 export enum TicketStatusEnum {
   AVAILABLE = 'available',
@@ -29,4 +38,10 @@ export class Ticket {
 
   @ManyToOne(() => Event, (event) => event.tickets)
   event: Event;
+
+  @OneToMany(() => ReservationTicket, (r) => r.ticket)
+  reservations: ReservationTicket[];
+
+  @ManyToMany(() => Purchase, (p) => p.tickets)
+  purchases: Purchase[];
 }
