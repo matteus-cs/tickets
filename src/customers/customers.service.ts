@@ -48,4 +48,8 @@ export class CustomersService {
       await queryRunner.release();
     }
   }
+
+  async findByUserId(userId: number) {
+    return await this.customerRepository.findOneBy({ user: { id: userId } });
+  }
 }

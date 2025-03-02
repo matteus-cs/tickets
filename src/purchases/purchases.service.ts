@@ -28,8 +28,8 @@ export class PurchasesService {
     private dataSource: DataSource,
     private paymentService: PaymentService,
   ) {}
-  async create(createPurchaseDto: CreatePurchaseDto) {
-    const { ticketIds, cardToken, customerId } = createPurchaseDto;
+  async create(createPurchaseDto: CreatePurchaseDto, customerId: number) {
+    const { ticketIds, cardToken } = createPurchaseDto;
     const customer = await this.customerRepository
       .createQueryBuilder('customer')
       .leftJoinAndSelect('customer.user', 'user')
