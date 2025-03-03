@@ -6,12 +6,12 @@ import {
 } from '@nestjs/common';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
 import { DataSource, QueryFailedError, Repository } from 'typeorm';
-import { Customer } from 'src/customers/entities/customer.entity';
+import { Customer } from '@/customers/entities/customer.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Ticket, TicketStatusEnum } from 'src/tickets/entities/ticket.entity';
+import { Ticket, TicketStatusEnum } from '@/tickets/entities/ticket.entity';
 import { EPurchaseStatus, Purchase } from './entities/purchase.entity';
 import { ReservationTicket } from './entities/reservationTicket.entity';
-import { PaymentService } from 'src/payment/payment.service';
+import { PaymentService } from '@/payment/payment.service';
 
 @Injectable()
 export class PurchasesService {
@@ -51,7 +51,6 @@ export class PurchasesService {
       throw new NotFoundException('Some tickets not found');
     }
     if (
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
       tickets.some((ticket) => ticket.status !== TicketStatusEnum.AVAILABLE)
     ) {
       throw new BadRequestException('Some tickets are not available');

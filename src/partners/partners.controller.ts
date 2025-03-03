@@ -10,10 +10,10 @@ import {
 } from '@nestjs/common';
 import { PartnersService } from './partners.service';
 import { CreatePartnerDto } from './dto/create-partner.dto';
-import { EventsService } from 'src/events/events.service';
-import { AuthGuard } from 'src/auth/auth.guard';
-import { CreateEventDto } from 'src/events/dto/create-event.dto';
-import { payloadType } from 'src/auth/auth.service';
+import { EventsService } from '@/events/events.service';
+import { AuthGuard } from '@/auth/auth.guard';
+import { CreateEventDto } from '@/events/dto/create-event.dto';
+import { payloadType } from '@/auth/auth.service';
 
 @Controller('partners')
 export class PartnersController {

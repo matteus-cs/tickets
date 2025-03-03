@@ -1,5 +1,5 @@
-import { Partner } from 'src/partners/entities/partner.entity';
-import { Ticket } from 'src/tickets/entities/ticket.entity';
+import { Partner } from '@/partners/entities/partner.entity';
+import { Ticket } from '@/tickets/entities/ticket.entity';
 import {
   Column,
   Entity,

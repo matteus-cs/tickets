@@ -8,8 +8,8 @@ import {
 } from '@nestjs/common';
 import { PurchasesService } from './purchases.service';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
-import { AuthGuard } from 'src/auth/auth.guard';
-import { CustomersService } from 'src/customers/customers.service';
+import { AuthGuard } from '@/auth/auth.guard';
+import { CustomersService } from '@/customers/customers.service';
 
 @Controller('purchases')
 export class PurchasesController {
@@ -21,7 +21,6 @@ export class PurchasesController {
   @UseGuards(AuthGuard)
   @Post()
   async create(@Body() createPurchaseDto: CreatePurchaseDto, @Request() req) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     const customer = await this.customerService.findByUserId(req.user.sub);
     if (!customer) {
       throw new UnauthorizedException('User needs be a customer');

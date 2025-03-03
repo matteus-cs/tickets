@@ -1,6 +1,8 @@
-import { Event } from 'src/events/entities/event.entity';
-import { Purchase } from 'src/purchases/entities/purchase.entity';
-import { ReservationTicket } from 'src/purchases/entities/reservationTicket.entity';
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+import { Event } from '@/events/entities/event.entity';
+import { Purchase } from '@/purchases/entities/purchase.entity';
+import { ReservationTicket } from '@/purchases/entities/reservationTicket.entity';
 import {
   Column,
   Entity,

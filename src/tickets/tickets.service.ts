@@ -3,7 +3,7 @@ import { CreateTicketDto } from './dto/create-ticket.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Ticket } from './entities/ticket.entity';
 import { Repository } from 'typeorm';
-import { Partner } from 'src/partners/entities/partner.entity';
+import { Partner } from '@/partners/entities/partner.entity';
 
 @Injectable()
 export class TicketsService {

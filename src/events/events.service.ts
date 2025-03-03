@@ -3,8 +3,8 @@ import { Event } from './entities/event.entity';
 import { CreateEventDto } from './dto/create-event.dto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { payloadType } from 'src/auth/auth.service';
-import { Partner } from 'src/partners/entities/partner.entity';
+import { payloadType } from '@/auth/auth.service';
+import { Partner } from '@/partners/entities/partner.entity';
 
 @Injectable()
 export class EventsService {

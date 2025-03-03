@@ -1,6 +1,6 @@
-import { Purchase } from 'src/purchases/entities/purchase.entity';
-import { ReservationTicket } from 'src/purchases/entities/reservationTicket.entity';
-import { User } from 'src/users/entities/user.entity';
+import { Purchase } from '@/purchases/entities/purchase.entity';
+import { ReservationTicket } from '@/purchases/entities/reservationTicket.entity';
+import { User } from '@/users/entities/user.entity';
 import {
   Column,
   Entity,

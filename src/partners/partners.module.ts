@@ -3,9 +3,9 @@ import { PartnersService } from './partners.service';
 import { PartnersController } from './partners.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Partner } from './entities/partner.entity';
-import { User } from 'src/users/entities/user.entity';
-import { Event } from 'src/events/entities/event.entity';
-import { EventsModule } from 'src/events/events.module';
+import { User } from '@/users/entities/user.entity';
+import { Event } from '@/events/entities/event.entity';
+import { EventsModule } from '@/events/events.module';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Partner, User, Event]), EventsModule],
