@@ -6,10 +6,18 @@ import { Partner } from './entities/partner.entity';
 import { User } from '@/users/entities/user.entity';
 import { Event } from '@/events/entities/event.entity';
 import { EventsModule } from '@/events/events.module';
+import { PartnerRepository } from '@/repositories/partner.repository';
+import { PartnerRepositoryAdapter } from './partner.repository.adapter';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Partner, User, Event]), EventsModule],
   controllers: [PartnersController],
-  providers: [PartnersService],
+  providers: [
+    PartnersService,
+    {
+      provide: PartnerRepository,
+      useClass: PartnerRepositoryAdapter,
+    },
+  ],
 })
 export class PartnersModule {}

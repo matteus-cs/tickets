@@ -27,4 +27,10 @@ export class Partner {
 
   @OneToMany(() => Event, (event) => event.partner, { cascade: true })
   events: Event[];
+
+  constructor(companyName: string, createdAt: Date, user: User) {
+    this.companyName = companyName;
+    this.createdAt = createdAt;
+    this.user = user;
+  }
 }
