@@ -1,18 +1,29 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { PartnersService } from './partners.service';
+import { InMemoryPartnerRepository } from './inMemoryPartner.repository';
+import { Partner } from './entities/partner.entity';
 
 describe('PartnersService', () => {
   let service: PartnersService;
+  let partnerRepository: InMemoryPartnerRepository;
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [PartnersService],
-    }).compile();
-
-    service = module.get<PartnersService>(PartnersService);
+  beforeEach(() => {
+    partnerRepository = new InMemoryPartnerRepository();
+    service = new PartnersService(partnerRepository);
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+    expect(partnerRepository).toBeInstanceOf(InMemoryPartnerRepository);
+  });
+
+  it('should be able create an partner', async () => {
+    await service.create({
+      name: 'John Doe',
+      email: 'john_partner@email.com',
+      password: 'pass1234',
+      companyName: 'John Ilimited',
+    });
+    expect(partnerRepository.partners).toHaveLength(1);
+    expect(partnerRepository.partners[0]).toBeInstanceOf(Partner);
   });
 });
