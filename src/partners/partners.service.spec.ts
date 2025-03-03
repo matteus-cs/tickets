@@ -26,4 +26,21 @@ describe('PartnersService', () => {
     expect(partnerRepository.partners).toHaveLength(1);
     expect(partnerRepository.partners[0]).toBeInstanceOf(Partner);
   });
+
+  it('should be throw an error when partner already exists', async () => {
+    await service.create({
+      name: 'John Doe',
+      email: 'john_partner@email.com',
+      password: 'pass1234',
+      companyName: 'John Ilimited',
+    });
+    await expect(
+      service.create({
+        name: 'John Doe',
+        email: 'john_partner@email.com',
+        password: 'pass1234',
+        companyName: 'John Ilimited',
+      }),
+    ).rejects.toThrow();
+  });
 });

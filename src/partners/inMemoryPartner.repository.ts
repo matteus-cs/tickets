@@ -14,4 +14,7 @@ export class InMemoryPartnerRepository implements PartnerRepository {
   async findByUserId(userId: number): Promise<Partner | null> {
     return this.partners.find((p) => p.user.id === userId) ?? null;
   }
+  async findOneBy(email: string): Promise<Partner | null> {
+    return this.partners.find((p) => p.user.email === email) ?? null;
+  }
 }
