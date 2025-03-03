@@ -31,4 +31,7 @@ export class PartnerRepositoryAdapter implements PartnerRepository {
   async findByUserId(userId: number): Promise<Partner | null> {
     return await this.partnerRepository.findOneBy({ user: { id: userId } });
   }
+  async findOneBy(email: string): Promise<Partner | null> {
+    return await this.partnerRepository.findOneBy({ user: { email } });
+  }
 }
