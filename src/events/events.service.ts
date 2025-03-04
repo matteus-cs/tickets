@@ -1,65 +1,57 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { Event } from './entities/event.entity';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreateEventDto } from './dto/create-event.dto';
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
 import { payloadType } from '@/auth/auth.service';
-import { Partner } from '@/partners/entities/partner.entity';
+import { PartnerRepository } from '@/repositories/partner.repository';
+import { EventRepository } from '@/repositories/event.repository';
+import { Event } from './entities/event.entity';
 
 @Injectable()
 export class EventsService {
   constructor(
-    @InjectRepository(Event)
-    private eventsRepository: Repository<Event>,
+    private eventsRepository: EventRepository,
 
-    @InjectRepository(Partner)
-    private partnersRepository: Repository<Partner>,
+    private partnersRepository: PartnerRepository,
   ) {}
   async create(createEventDto: CreateEventDto, user: payloadType) {
     const { name, description, date, location } = createEventDto;
 
-    const partner = await this.partnersRepository.findOne({
-      where: { user: { id: user.sub } },
-    });
+    const partner = await this.partnersRepository.findByUserId(user.sub);
 
     if (!partner) {
       throw new UnauthorizedException();
     }
 
-    const event = this.eventsRepository.create({
+    const event = new Event(
       name,
       description,
       date,
       location,
-      createdAt: new Date(),
+      new Date(),
       partner,
-    });
+    );
 
     await this.eventsRepository.save(event);
   }
 
   async findAll(partnerId?: number) {
     if (partnerId) {
-      const partners = await this.eventsRepository.find({
-        where: { partner: { id: partnerId } },
-      });
-      return partners;
+      return await this.eventsRepository.findAll(partnerId);
     }
-    const partners = await this.eventsRepository.find();
-    return partners;
+    return await this.eventsRepository.findAll();
   }
 
   async findById(id: number, partnerId?: number) {
     if (partnerId) {
-      const partners = await this.eventsRepository.findOne({
-        where: {
-          id,
-          partner: { id: partnerId },
-        },
-      });
-      return partners;
+      const partner = await this.eventsRepository.findById(id, partnerId);
+      if (!partner) throw new NotFoundException();
+      return partner;
     }
-    const partners = await this.eventsRepository.findOneBy({ id });
-    return partners;
+    const partner = await this.eventsRepository.findById(id);
+    if (!partner) throw new NotFoundException();
+    return partner;
   }
 }
