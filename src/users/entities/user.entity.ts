@@ -20,4 +20,18 @@ export class User {
 
   @Column()
   createdAt: Date;
+
+  constructor(
+    name: string,
+    email: string,
+    password: string,
+    updatedAt: Date,
+    createdAt: Date,
+  ) {
+    this.name = name;
+    this.email = email;
+    this.password = password;
+    this.updatedAt = updatedAt;
+    this.createdAt = createdAt;
+  }
 }
