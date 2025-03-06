@@ -33,4 +33,13 @@ export class Customer {
 
   @OneToMany(() => Purchase, (purchase) => purchase.customer)
   purchases: Purchase[];
+
+  constructor(address: string, phone: string, createdAt?: Date, user?: User) {
+    this.address = address;
+    this.phone = phone;
+    this.createdAt = createdAt ?? new Date();
+    if (user) {
+      this.user = user;
+    }
+  }
 }

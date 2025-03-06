@@ -1,55 +1,29 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { Customer } from './entities/customer.entity';
 import { User } from '@/users/entities/user.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
 import { hashSync } from 'bcrypt';
+import { CustomerRepository } from '@/repositories/customer.repository';
 
 @Injectable()
 export class CustomersService {
-  constructor(
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
-    @InjectRepository(Customer)
-    private customerRepository: Repository<Customer>,
-
-    private dataSource: DataSource,
-  ) {}
+  constructor(private customerRepository: CustomerRepository) {}
   async create(createCustomerDto: CreateCustomerDto): Promise<void> {
     const { name, email, password, address, phone } = createCustomerDto;
-    const createdAt = new Date();
+    const date = new Date();
     const hashedPassword = hashSync(password, 10);
-    const user = this.userRepository.create({
-      name,
-      email,
-      password: hashedPassword,
-      updatedAt: createdAt,
-      createdAt,
-    });
+    const user = new User(name, email, hashedPassword, date, date);
 
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-    try {
-      await queryRunner.manager.save(user);
-      const customer = this.customerRepository.create({
-        address,
-        phone,
-        createdAt,
-        user,
-      });
-      await queryRunner.manager.save(customer);
-      await queryRunner.commitTransaction();
-    } catch (err) {
-      await queryRunner.rollbackTransaction();
-      throw err;
-    } finally {
-      await queryRunner.release();
-    }
+    const customer = new Customer(address, phone, date, user);
+
+    await this.customerRepository.save(customer);
   }
 
   async findByUserId(userId: number) {
-    return await this.customerRepository.findOneBy({ user: { id: userId } });
+    const customer = await this.customerRepository.findByUserId(userId);
+    if (!customer) {
+      throw new NotFoundException();
+    }
+    return customer;
   }
 }
