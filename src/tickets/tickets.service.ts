@@ -1,40 +1,35 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Ticket } from './entities/ticket.entity';
-import { Repository } from 'typeorm';
 import { Partner } from '@/partners/entities/partner.entity';
+import { TicketRepository } from '@/repositories/ticket.repository';
+import { PartnerRepository } from '@/repositories/partner.repository';
+import { Ticket } from './entities/ticket.entity';
 
 @Injectable()
 export class TicketsService {
   constructor(
-    @InjectRepository(Ticket)
-    private ticketsRepository: Repository<Ticket>,
+    private ticketsRepository: TicketRepository,
 
     @InjectRepository(Partner)
-    private partnersRepository: Repository<Partner>,
+    private partnersRepository: PartnerRepository,
   ) {}
   async create(
     createTicketDto: CreateTicketDto[],
     eventId: number,
     userId: number,
   ) {
-    const partner = await this.partnersRepository.findOne({
-      where: { user: { id: userId } },
-    });
+    const partner = await this.partnersRepository.findByUserId(userId);
 
     if (!partner) {
       throw new UnauthorizedException();
     }
-    const tickets = createTicketDto.reduce<CreateTicketDto[]>((acc, ticket) => {
+    const tickets = createTicketDto.reduce<Ticket[]>((acc, ticket) => {
       if (ticket.quantity) {
         for (let i = 0; i < ticket.quantity; i++) {
           acc.push(
-            this.ticketsRepository.create({
-              location: ticket.location,
-              price: ticket.price,
-              createdAt: new Date(),
-              event: { id: eventId },
+            Ticket.create(ticket.location, ticket.price, undefined, undefined, {
+              id: eventId,
             }),
           );
         }
@@ -42,19 +37,12 @@ export class TicketsService {
       }
       return [
         ...acc,
-        this.ticketsRepository.create({
-          location: ticket.location,
-          price: ticket.price,
-          createdAt: new Date(),
-          event: { id: eventId },
+        Ticket.create(ticket.location, ticket.price, undefined, undefined, {
+          id: eventId,
         }),
       ];
     }, []);
 
-    const ticketsPromises = tickets.map((ticket) =>
-      this.ticketsRepository.save(ticket),
-    );
-
-    await Promise.all(ticketsPromises);
+    await this.ticketsRepository.save(tickets);
   }
 }

@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { Event } from '@/events/entities/event.entity';
 import { Purchase } from '@/purchases/entities/purchase.entity';
 import { ReservationTicket } from '@/purchases/entities/reservationTicket.entity';
@@ -46,4 +44,29 @@ export class Ticket {
 
   @ManyToMany(() => Purchase, (p) => p.tickets)
   purchases: Purchase[];
+
+  static create(
+    location: string,
+    price: number,
+    status?: TicketStatusEnum,
+    createdAt?: Date,
+    event?: Partial<Event>,
+  ) {
+    const ticket = new Ticket();
+    ticket.location = location;
+    ticket.price = price;
+    if (status) {
+      ticket.status = status;
+    }
+    ticket.createdAt = createdAt ?? new Date();
+    let iEvent: Event;
+    if (event && Object.keys(event).length > 0) {
+      iEvent = new Event();
+      for (const e in event) {
+        iEvent[e] = event[e];
+      }
+      ticket.event = iEvent;
+    }
+    return ticket;
+  }
 }
