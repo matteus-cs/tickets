@@ -34,7 +34,7 @@ export class Event {
   @OneToMany(() => Ticket, (ticket) => ticket.event)
   tickets: Ticket[];
 
-  constructor(
+  /* constructor(
     name: string,
     description: string,
     date: Date,
@@ -54,5 +54,28 @@ export class Event {
     if (tickets) {
       this.tickets = tickets;
     }
+  } */
+  static create(
+    name: string,
+    description: string,
+    date: Date,
+    location: string,
+    createdAt: Date,
+    partner?: Partner,
+    tickets?: Ticket[],
+  ) {
+    const event = new Event();
+    event.name = name;
+    event.description = description;
+    event.date = date;
+    event.location = location;
+    event.createdAt = createdAt;
+    if (partner) {
+      event.partner = partner;
+    }
+    if (tickets) {
+      event.tickets = tickets;
+    }
+    return event;
   }
 }

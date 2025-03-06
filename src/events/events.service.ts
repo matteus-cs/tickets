@@ -25,7 +25,7 @@ export class EventsService {
       throw new UnauthorizedException();
     }
 
-    const event = new Event(
+    const event = Event.create(
       name,
       description,
       date,

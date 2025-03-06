@@ -41,8 +41,22 @@ describe('EventsService', () => {
   it('should be able find all events', async () => {
     const date = new Date();
     eventRepository.events.push(
-      new Event('event 1', 'description event 1', date, 'mart', date, partner),
-      new Event('event 2', 'description event 2', date, 'mart', date, partner),
+      Event.create(
+        'event 1',
+        'description event 1',
+        date,
+        'mart',
+        date,
+        partner,
+      ),
+      Event.create(
+        'event 2',
+        'description event 2',
+        date,
+        'mart',
+        date,
+        partner,
+      ),
     );
 
     const events = await service.findAll();
@@ -51,7 +65,7 @@ describe('EventsService', () => {
 
   it('should be able find an event by id ', async () => {
     const date = new Date();
-    const event = new Event(
+    const event = Event.create(
       'event 1',
       'description event 1',
       date,
@@ -62,7 +76,14 @@ describe('EventsService', () => {
     event.id = 1;
     eventRepository.events.push(
       event,
-      new Event('event 2', 'description event 2', date, 'mart', date, partner),
+      Event.create(
+        'event 2',
+        'description event 2',
+        date,
+        'mart',
+        date,
+        partner,
+      ),
     );
 
     const eventExpected = await service.findById(1);
