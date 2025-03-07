@@ -5,42 +5,42 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
-import { DataSource, QueryFailedError, Repository } from 'typeorm';
-import { Customer } from '@/customers/entities/customer.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Ticket, TicketStatusEnum } from '@/tickets/entities/ticket.entity';
+import { QueryFailedError } from 'typeorm';
+import { TicketStatusEnum } from '@/tickets/entities/ticket.entity';
 import { EPurchaseStatus, Purchase } from './entities/purchase.entity';
-import { ReservationTicket } from './entities/reservationTicket.entity';
+import {
+  EReservationTicketStatus,
+  ReservationTicket,
+} from './entities/reservationTicket.entity';
 import { PaymentService } from '@/payment/payment.service';
+import { PurchaseRepository } from '@/repositories/purchase.repository';
+import { CustomerRepository } from '@/repositories/customer.repository';
+import { TicketRepository } from '@/repositories/ticket.repository';
+import { ReservationTicketRepository } from '@/repositories/reservationTicket.repository';
 
 @Injectable()
 export class PurchasesService {
   constructor(
-    @InjectRepository(Customer)
-    private customerRepository: Repository<Customer>,
+    private customerRepository: CustomerRepository,
 
-    @InjectRepository(Ticket)
-    private ticketRepository: Repository<Ticket>,
+    private ticketRepository: TicketRepository,
 
-    @InjectRepository(Purchase)
-    private purchaseRepository: Repository<Purchase>,
+    private purchaseRepository: PurchaseRepository,
 
-    private dataSource: DataSource,
+    private reservationTicketRepository: ReservationTicketRepository,
+
     private paymentService: PaymentService,
+    // private dataSource: DataSource,
   ) {}
   async create(createPurchaseDto: CreatePurchaseDto, customerId: number) {
     const { ticketIds, cardToken } = createPurchaseDto;
-    const customer = await this.customerRepository
-      .createQueryBuilder('customer')
-      .leftJoinAndSelect('customer.user', 'user')
-      .where('customer.id = :id', { id: customerId })
-      .getOne();
+    const customer = await this.customerRepository.findById(customerId, true);
     if (!customer) {
       throw new NotFoundException('customer not found');
     }
 
     const findAllTicketPromises = ticketIds.map((id) =>
-      this.ticketRepository.findOneBy({ id }),
+      this.ticketRepository.findById(id),
     );
 
     const tickets = (await Promise.all(findAllTicketPromises)).filter(
@@ -50,9 +50,7 @@ export class PurchasesService {
     if (tickets.length !== ticketIds.length) {
       throw new NotFoundException('Some tickets not found');
     }
-    if (
-      tickets.some((ticket) => ticket.status !== TicketStatusEnum.AVAILABLE)
-    ) {
+    if (tickets.some((ticket) => ticket.status !== 'available')) {
       throw new BadRequestException('Some tickets are not available');
     }
 
@@ -62,23 +60,62 @@ export class PurchasesService {
       }
     }, 0);
 
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    const purchase = this.purchaseRepository.create({
-      purchaseDate: new Date(),
-      totalAmount: amount,
-      tickets: tickets,
+    const purchase = new Purchase(
+      new Date(),
+      amount as number,
+      undefined,
       customer,
-    });
+      tickets,
+    );
+    const { id: purchaseId } = await this.purchaseRepository.save(purchase);
     try {
-      await queryRunner.startTransaction();
-      await queryRunner.manager.save(purchase);
-      await queryRunner.commitTransaction();
+      await this.reservationTicketRepository.startTransaction();
+      // purchase.status = EPurchaseStatus.PAID;
+      await this.purchaseRepository.update(purchaseId, {
+        status: EPurchaseStatus.PAID,
+      });
+      const reservations = tickets.map((t) => {
+        const reservation = new ReservationTicket();
+        reservation.reservationDate = new Date();
+        reservation.status = EReservationTicketStatus.RESERVED;
+        reservation.customer = customer;
+        reservation.ticket = t;
+        return reservation;
+      });
+      await this.reservationTicketRepository.save(reservations);
+
+      this.paymentService.processPayment(
+        {
+          name: customer.user.name,
+          email: customer.user.email,
+          phone: customer.phone,
+          address: customer.address,
+        },
+        purchase.totalAmount,
+        cardToken,
+      );
+
+      await Promise.all(
+        tickets.map((t) => {
+          return this.ticketRepository.update(t.id, {
+            status: TicketStatusEnum.SOLD,
+          });
+        }),
+      );
+      await this.reservationTicketRepository.commitTransaction();
     } catch (error) {
-      await queryRunner.rollbackTransaction();
+      await this.reservationTicketRepository.rollbackTransaction();
+      await this.purchaseRepository.update(purchaseId, {
+        status: EPurchaseStatus.ERROR,
+      });
+      if (error instanceof QueryFailedError) {
+        throw new UnprocessableEntityException('ticket no longer available');
+      }
       throw error;
+    } finally {
+      await this.reservationTicketRepository.release();
     }
-    try {
+    /*  try {
       await queryRunner.startTransaction();
 
       purchase.status = EPurchaseStatus.PAID;
@@ -122,6 +159,6 @@ export class PurchasesService {
       throw error;
     } finally {
       await queryRunner.release();
-    }
+    } */
   }
 }

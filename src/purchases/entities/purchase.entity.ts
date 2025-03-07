@@ -40,4 +40,22 @@ export class Purchase {
   @ManyToMany(() => Ticket, (ticket) => ticket)
   @JoinTable()
   tickets: Ticket[];
+
+  constructor(
+    purchaseDate: Date,
+    totalAmount: number,
+    status?: EPurchaseStatus,
+    customer?: Customer,
+    tickets?: Ticket[],
+  ) {
+    this.purchaseDate = purchaseDate;
+    this.totalAmount = totalAmount;
+    this.status = status ?? EPurchaseStatus.PENDING;
+    if (customer) {
+      this.customer = customer;
+    }
+    if (tickets && tickets.length > 0) {
+      this.tickets = tickets;
+    }
+  }
 }

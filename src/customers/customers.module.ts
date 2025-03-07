@@ -17,6 +17,6 @@ import { CustomerRepositoryAdapter } from './repositories/customer.repository.ad
       useClass: CustomerRepositoryAdapter,
     },
   ],
-  exports: [CustomersService],
+  exports: [CustomersService, CustomerRepository],
 })
 export class CustomersModule {}

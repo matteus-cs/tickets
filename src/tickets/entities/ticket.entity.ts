@@ -55,9 +55,7 @@ export class Ticket {
     const ticket = new Ticket();
     ticket.location = location;
     ticket.price = price;
-    if (status) {
-      ticket.status = status;
-    }
+    ticket.status = status ?? TicketStatusEnum.AVAILABLE;
     ticket.createdAt = createdAt ?? new Date();
     let iEvent: Event;
     if (event && Object.keys(event).length > 0) {

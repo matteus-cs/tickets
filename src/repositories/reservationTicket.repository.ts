@@ -1,0 +1,11 @@
+import { ReservationTicket } from '@/purchases/entities/reservationTicket.entity';
+
+export abstract class ReservationTicketRepository {
+  abstract startTransaction(): Promise<void>;
+  abstract commitTransaction(): Promise<void>;
+  abstract rollbackTransaction(): Promise<void>;
+  abstract release(): Promise<void>;
+  abstract save(
+    reservationTicket: ReservationTicket | ReservationTicket[],
+  ): Promise<void>;
+}

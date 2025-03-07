@@ -1,7 +1,5 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { CreateTicketDto } from './dto/create-ticket.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Partner } from '@/partners/entities/partner.entity';
 import { TicketRepository } from '@/repositories/ticket.repository';
 import { PartnerRepository } from '@/repositories/partner.repository';
 import { Ticket } from './entities/ticket.entity';
@@ -11,7 +9,6 @@ export class TicketsService {
   constructor(
     private ticketsRepository: TicketRepository,
 
-    @InjectRepository(Partner)
     private partnersRepository: PartnerRepository,
   ) {}
   async create(
