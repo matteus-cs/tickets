@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { compareSync } from 'bcrypt';
-import { UsersService } from '@/users/users.service';
+import { JwtService } from '@nestjs/jwt';
+import { UserRepository } from '@/repositories/user.repository';
 
 export type payloadType = {
   sub: number;
@@ -11,7 +11,7 @@ export type payloadType = {
 @Injectable()
 export class AuthService {
   constructor(
-    private userService: UsersService,
+    private userRepository: UserRepository,
     private jwtService: JwtService,
   ) {}
 
@@ -19,7 +19,7 @@ export class AuthService {
     email: string,
     password: string,
   ): Promise<{ access_token: string }> {
-    const user = await this.userService.findByEmail(email);
+    const user = await this.userRepository.findByEmail(email);
     if (!user) {
       throw new UnauthorizedException();
     }
