@@ -8,6 +8,7 @@ import {
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
+  Relation,
 } from 'typeorm';
 
 @Entity('partners')
@@ -23,10 +24,10 @@ export class Partner {
 
   @OneToOne(() => User)
   @JoinColumn()
-  user: User;
+  user: Relation<User>;
 
   @OneToMany(() => Event, (event) => event.partner, { cascade: true })
-  events: Event[];
+  events: Relation<Event[]>;
 
   constructor(companyName: string, createdAt: Date, user: User) {
     this.companyName = companyName;

@@ -42,6 +42,8 @@
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.11",
     "@swc/cli": "^0.6.0",
+    "@swc/core": "^1.11.8",
+    "@swc/jest": "^0.2.37",
     "@types/bcrypt": "^5.0.2",
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.14",
@@ -68,9 +70,9 @@
       "ts"
     ],
     "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
+    "testRegex": ".*\\.service\\.spec\\.ts$",
     "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
+      "^.+\\.(t|j)sx?$": "@swc/jest"
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s"

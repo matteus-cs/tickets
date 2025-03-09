@@ -7,6 +7,7 @@ import {
   Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
+  type Relation,
   Unique,
 } from 'typeorm';
 
@@ -38,10 +39,10 @@ export class ReservationTicket {
   reservedTicketId: number;
 
   @ManyToOne(() => Ticket, (ticket) => ticket.reservations, { eager: true })
-  ticket: Ticket;
+  ticket: Relation<Ticket>;
 
   @ManyToOne(() => Customer, (customer) => customer.reservations, {
     eager: true,
   })
-  customer: Customer;
+  customer: Relation<Customer>;
 }

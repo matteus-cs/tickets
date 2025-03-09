@@ -6,6 +6,7 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  Relation,
 } from 'typeorm';
 
 @Entity('events')
@@ -29,10 +30,10 @@ export class Event {
   createdAt: Date;
 
   @ManyToOne(() => Partner, (partner) => partner.events)
-  partner: Partner;
+  partner: Relation<Partner>;
 
   @OneToMany(() => Ticket, (ticket) => ticket.event)
-  tickets: Ticket[];
+  tickets: Relation<Ticket[]>;
 
   /* constructor(
     name: string,

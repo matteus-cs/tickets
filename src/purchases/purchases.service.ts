@@ -50,7 +50,9 @@ export class PurchasesService {
     if (tickets.length !== ticketIds.length) {
       throw new NotFoundException('Some tickets not found');
     }
-    if (tickets.some((ticket) => ticket.status !== 'available')) {
+    if (
+      tickets.some((ticket) => ticket.status !== TicketStatusEnum.AVAILABLE)
+    ) {
       throw new BadRequestException('Some tickets are not available');
     }
 

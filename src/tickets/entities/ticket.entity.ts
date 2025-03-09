@@ -8,6 +8,7 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  type Relation,
 } from 'typeorm';
 
 export enum TicketStatusEnum {
@@ -31,19 +32,19 @@ export class Ticket {
     enum: TicketStatusEnum,
     default: TicketStatusEnum.AVAILABLE,
   })
-  status: string;
+  status: TicketStatusEnum;
 
   @Column()
   createdAt: Date;
 
   @ManyToOne(() => Event, (event) => event.tickets)
-  event: Event;
+  event: Relation<Event>;
 
   @OneToMany(() => ReservationTicket, (r) => r.ticket)
-  reservations: ReservationTicket[];
+  reservations: Relation<ReservationTicket[]>;
 
   @ManyToMany(() => Purchase, (p) => p.tickets)
-  purchases: Purchase[];
+  purchases: Relation<Purchase[]>;
 
   static create(
     location: string,

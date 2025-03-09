@@ -1,5 +1,6 @@
 import { Customer } from '@/customers/entities/customer.entity';
 import { Ticket } from '@/tickets/entities/ticket.entity';
+import { forwardRef } from '@nestjs/common';
 import {
   Column,
   Entity,
@@ -37,7 +38,7 @@ export class Purchase {
   @ManyToOne(() => Customer, (c) => c.purchases)
   customer: Customer;
 
-  @ManyToMany(() => Ticket, (ticket) => ticket)
+  @ManyToMany(() => forwardRef(() => Ticket).forwardRef, (ticket) => ticket)
   @JoinTable()
   tickets: Ticket[];
 

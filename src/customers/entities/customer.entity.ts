@@ -8,6 +8,7 @@ import {
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
+  Relation,
 } from 'typeorm';
 
 @Entity('customers')
@@ -29,10 +30,10 @@ export class Customer {
   user: User;
 
   @OneToMany(() => ReservationTicket, (r) => r.customer)
-  reservations: ReservationTicket[];
+  reservations: Relation<ReservationTicket[]>;
 
   @OneToMany(() => Purchase, (purchase) => purchase.customer)
-  purchases: Purchase[];
+  purchases: Relation<Purchase[]>;
 
   constructor(address: string, phone: string, createdAt?: Date, user?: User) {
     this.address = address;
