@@ -17,9 +17,18 @@ describe('EventsService', () => {
     partnerRepository = new InMemoryPartnerRepository();
     service = new EventsService(eventRepository, partnerRepository);
     const date = new Date();
-    user = new User('john', 'john@email.com', 'pwd1234', date, date);
+    user = User.create({
+      name: 'john',
+      email: 'john@email.com',
+      password: 'pwd12345',
+      createdAt: date,
+    });
     user.id = 1;
-    partner = new Partner('john ilimited', date, user);
+    partner = Partner.create({
+      companyName: 'john ilimited',
+      createdAt: date,
+      user,
+    });
     partner.id = 1;
   });
 
@@ -41,22 +50,22 @@ describe('EventsService', () => {
   it('should be able find all events', async () => {
     const date = new Date();
     eventRepository.events.push(
-      Event.create(
-        'event 1',
-        'description event 1',
+      Event.create({
+        name: 'event 1',
+        description: 'description event 1',
         date,
-        'mart',
-        date,
+        location: 'mart',
+        createdAt: date,
         partner,
-      ),
-      Event.create(
-        'event 2',
-        'description event 2',
+      }),
+      Event.create({
+        name: 'event 2',
+        description: 'description event 2',
         date,
-        'mart',
-        date,
+        location: 'mart',
+        createdAt: date,
         partner,
-      ),
+      }),
     );
 
     const events = await service.findAll();
@@ -65,25 +74,25 @@ describe('EventsService', () => {
 
   it('should be able find an event by id ', async () => {
     const date = new Date();
-    const event = Event.create(
-      'event 1',
-      'description event 1',
+    const event = Event.create({
+      name: 'event 1',
+      description: 'description event 1',
       date,
-      'mart',
-      date,
+      location: 'mart',
+      createdAt: date,
       partner,
-    );
+    });
     event.id = 1;
     eventRepository.events.push(
       event,
-      Event.create(
-        'event 2',
-        'description event 2',
+      Event.create({
+        name: 'event 2',
+        description: 'description event 2',
         date,
-        'mart',
-        date,
+        location: 'mart',
+        createdAt: date,
         partner,
-      ),
+      }),
     );
 
     const eventExpected = await service.findById(1);

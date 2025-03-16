@@ -16,7 +16,7 @@ describe('CustomersService', () => {
     await service.create({
       name: 'Customer',
       email: 'customer@email.com',
-      password: 'pwd1234',
+      password: 'pwd12345',
       address: 'in wonderland',
       phone: '99 99999-9999',
     });
@@ -26,16 +26,20 @@ describe('CustomersService', () => {
 
   it('should be able find customer by user id', async () => {
     const date = new Date();
-    const user = new User(
-      'Customer',
-      'customer@email.com',
-      'pwd1234',
-      date,
-      date,
-    );
+    const user = User.create({
+      name: 'john',
+      email: 'john@email.com',
+      password: 'pwd12345',
+      createdAt: date,
+    });
     user.id = 1;
     customerRepository.customers.push(
-      new Customer('in wonderland', '99 99999-9999', date, user),
+      Customer.create({
+        address: 'in wonderland',
+        phone: '99 99999-9999',
+        createdAt: date,
+        user,
+      }),
     );
     const customer = await service.findByUserId(1);
 

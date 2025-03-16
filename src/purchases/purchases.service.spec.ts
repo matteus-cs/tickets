@@ -6,8 +6,8 @@ import { InMemoryReservationTicketRepository } from './repositories/inMemoryRese
 import { PaymentService } from '@/payment/payment.service';
 import { Ticket } from '@/tickets/entities/ticket.entity';
 import { Customer } from '@/customers/entities/customer.entity';
-import { EPurchaseStatus } from './entities/purchase.entity';
-import { EReservationTicketStatus } from './entities/reservationTicket.entity';
+import { PurchaseStatusEnum } from './entities/purchase.entity';
+import { ReservationTicketStatusEnum } from './entities/reservationTicket.entity';
 import { User } from '@/users/entities/user.entity';
 
 describe('PurchasesService', () => {
@@ -37,13 +37,26 @@ describe('PurchasesService', () => {
     );
 
     const date = new Date();
-    user = new User('john', 'john@email.com', 'pwd1234', date, date);
+    user = User.create({
+      name: 'john',
+      email: 'john@email.com',
+      password: 'pwd12345',
+      createdAt: date,
+    });
     user.id = 1;
 
-    customer = new Customer('in wonderland', '99 99999-9999', undefined, user);
+    customer = Customer.create({
+      address: 'in wonderland',
+      phone: '99 99999-9999',
+      createdAt: date,
+      user,
+    });
     await customerRepository.save(customer);
-    ticket = Ticket.create('vip', 40.0);
-    await ticketRepository.save([ticket, Ticket.create('norte', 20.0)]);
+    ticket = Ticket.create({ location: 'vip', price: 40.0 });
+    await ticketRepository.save([
+      ticket,
+      Ticket.create({ location: 'norte', price: 20.0 }),
+    ]);
   });
 
   it('should be defined', async () => {
@@ -56,10 +69,12 @@ describe('PurchasesService', () => {
     );
 
     expect(purchaseRepository.purchases).toHaveLength(1);
-    expect(purchaseRepository.purchases[0].status).toBe(EPurchaseStatus.PAID);
+    expect(purchaseRepository.purchases[0].status).toBe(
+      PurchaseStatusEnum.PAID,
+    );
     expect(reservationTicketRepository.reservationTicket).toHaveLength(1);
     expect(reservationTicketRepository.reservationTicket[0].status).toBe(
-      EReservationTicketStatus.RESERVED,
+      ReservationTicketStatusEnum.RESERVED,
     );
     expect(ticket.status).toBe('sold');
   });

@@ -17,9 +17,18 @@ describe('TicketsService', () => {
     service = new TicketsService(ticketRepository, partnerRepository);
 
     const date = new Date();
-    user = new User('john', 'john@email.com', 'pwd1234', date, date);
+    user = User.create({
+      name: 'john',
+      email: 'john@email.com',
+      password: 'pwd12345',
+      createdAt: date,
+    });
     user.id = 1;
-    partner = new Partner('john ilimited', date, user);
+    partner = Partner.create({
+      companyName: 'john ilimited',
+      createdAt: date,
+      user,
+    });
     partner.id = 1;
     partnerRepository.partners.push(partner);
   });

@@ -5,7 +5,6 @@ import { UserRepository } from '@/repositories/user.repository';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './constants';
 import { User } from '@/users/entities/user.entity';
-import * as bcrypt from 'bcrypt';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -28,13 +27,18 @@ describe('AuthService', () => {
       ],
     }).compile();
     const date = new Date();
-    user = new User('john', 'john@email.com', 'pwd1234', date, date);
+    user = User.create({
+      name: 'john',
+      email: 'john@email.com',
+      password: 'pwd12345',
+      createdAt: date,
+    });
     userRepository.users.push(user);
     service = module.get<AuthService>(AuthService);
   });
 
   it('should be able sing in', async () => {
-    jest.spyOn(bcrypt, 'compareSync').mockReturnValue(true);
+    jest.spyOn(User, 'comparePassword').mockReturnValue(true);
     const { access_token } = await service.signIn('john@email.com', 'pdw1234');
     expect(access_token).toBeTruthy();
   });
@@ -45,7 +49,7 @@ describe('AuthService', () => {
     ).rejects.toThrow();
   });
   it('should throw unauthorized error if password incorrect', async () => {
-    jest.spyOn(bcrypt, 'compareSync').mockReturnValue(false);
+    jest.spyOn(User, 'comparePassword').mockReturnValue(false);
     await expect(service.signIn('john@email.com', 'pdw1235')).rejects.toThrow();
   });
 });
