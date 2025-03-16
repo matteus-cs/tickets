@@ -11,7 +11,15 @@ import {
   Unique,
 } from 'typeorm';
 
-export enum EReservationTicketStatus {
+export type ReservationTicketProps = {
+  id?: number | null;
+  reservationDate?: Date | null;
+  status?: ReservationTicketStatusEnum | null;
+  ticket?: Partial<Ticket> | null;
+  customer?: Partial<Customer> | null;
+};
+
+export enum ReservationTicketStatusEnum {
   RESERVED = 'reserved',
   CANCELLED = 'cancelled',
 }
@@ -27,10 +35,10 @@ export class ReservationTicket {
 
   @Column({
     type: 'enum',
-    enum: ['reserved', 'cancelled'],
-    default: EReservationTicketStatus.RESERVED,
+    enum: ReservationTicketStatusEnum,
+    default: ReservationTicketStatusEnum.RESERVED,
   })
-  status: EReservationTicketStatus;
+  status: ReservationTicketStatusEnum;
 
   @Column({
     asExpression: "CASE WHEN status = 'reserved' THEN ticketId ELSE NULL END",
@@ -45,4 +53,24 @@ export class ReservationTicket {
     eager: true,
   })
   customer: Relation<Customer>;
+
+  static create(props: ReservationTicketProps) {
+    const reservationTicket = new ReservationTicket();
+
+    reservationTicket.reservationDate = props.reservationDate ?? new Date();
+    reservationTicket.status =
+      props.status ?? ReservationTicketStatusEnum.RESERVED;
+
+    if (props.ticket) {
+      const ticket = new Ticket();
+      Object.assign(ticket, props.ticket);
+      reservationTicket.ticket = ticket;
+    }
+    if (props.customer) {
+      const customer = new Customer();
+      Object.assign(customer, props.customer);
+      reservationTicket.customer = customer;
+    }
+    return reservationTicket;
+  }
 }

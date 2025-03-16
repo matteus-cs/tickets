@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { compareSync } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { UserRepository } from '@/repositories/user.repository';
+import { User } from '@/users/entities/user.entity';
 
 export type payloadType = {
   sub: number;
@@ -23,7 +23,7 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException();
     }
-    const isMatchedPass = compareSync(password, user.password);
+    const isMatchedPass = User.comparePassword(password, user.password);
     if (!isMatchedPass) {
       throw new UnauthorizedException();
     }

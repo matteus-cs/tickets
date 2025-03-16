@@ -25,8 +25,10 @@ export class TicketsService {
       if (ticket.quantity) {
         for (let i = 0; i < ticket.quantity; i++) {
           acc.push(
-            Ticket.create(ticket.location, ticket.price, undefined, undefined, {
-              id: eventId,
+            Ticket.create({
+              location: ticket.location,
+              price: ticket.price,
+              event: { id: eventId },
             }),
           );
         }
@@ -34,8 +36,10 @@ export class TicketsService {
       }
       return [
         ...acc,
-        Ticket.create(ticket.location, ticket.price, undefined, undefined, {
-          id: eventId,
+        Ticket.create({
+          location: ticket.location,
+          price: ticket.price,
+          event: { id: eventId },
         }),
       ];
     }, []);

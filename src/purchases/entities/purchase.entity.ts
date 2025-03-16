@@ -8,9 +8,19 @@ import {
   ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
+  Relation,
 } from 'typeorm';
 
-export enum EPurchaseStatus {
+export type PurchaseProps = {
+  id?: number | null;
+  purchaseDate: Date;
+  totalAmount: number;
+  status?: PurchaseStatusEnum | null;
+  customer?: Partial<Customer> | null;
+  tickets?: Partial<Ticket>[] | null;
+};
+
+export enum PurchaseStatusEnum {
   PENDING = 'pending',
   PAID = 'paid',
   ERROR = 'error',
@@ -30,33 +40,37 @@ export class Purchase {
 
   @Column({
     type: 'enum',
-    enum: EPurchaseStatus,
-    default: EPurchaseStatus.PENDING,
+    enum: PurchaseStatusEnum,
+    default: PurchaseStatusEnum.PENDING,
   })
-  status: EPurchaseStatus;
+  status: PurchaseStatusEnum;
 
   @ManyToOne(() => Customer, (c) => c.purchases)
-  customer: Customer;
+  customer: Relation<Customer>;
 
   @ManyToMany(() => forwardRef(() => Ticket).forwardRef, (ticket) => ticket)
   @JoinTable()
-  tickets: Ticket[];
+  tickets: Relation<Ticket[]>;
 
-  constructor(
-    purchaseDate: Date,
-    totalAmount: number,
-    status?: EPurchaseStatus,
-    customer?: Customer,
-    tickets?: Ticket[],
-  ) {
-    this.purchaseDate = purchaseDate;
-    this.totalAmount = totalAmount;
-    this.status = status ?? EPurchaseStatus.PENDING;
-    if (customer) {
-      this.customer = customer;
+  static create(props: PurchaseProps) {
+    const purchase = new Purchase();
+    Object.assign(purchase, props);
+    purchase.status = props.status ?? PurchaseStatusEnum.PENDING;
+
+    if (props.tickets) {
+      purchase.tickets = [];
+      for (const t of props.tickets) {
+        const ticket = new Ticket();
+        Object.assign(ticket, t);
+        purchase.tickets.push(ticket);
+      }
     }
-    if (tickets && tickets.length > 0) {
-      this.tickets = tickets;
+
+    if (props.customer) {
+      const customer = new Customer();
+      Object.assign(customer, props.customer);
+      purchase.customer = customer;
     }
+    return purchase;
   }
 }

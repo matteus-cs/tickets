@@ -25,14 +25,13 @@ export class EventsService {
       throw new UnauthorizedException();
     }
 
-    const event = Event.create(
+    const event = Event.create({
       name,
       description,
       date,
       location,
-      new Date(),
       partner,
-    );
+    });
 
     await this.eventsRepository.save(event);
   }

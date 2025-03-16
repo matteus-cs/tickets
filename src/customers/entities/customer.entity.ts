@@ -11,6 +11,14 @@ import {
   Relation,
 } from 'typeorm';
 
+export type CustomerProps = {
+  id?: number | null;
+  address: string;
+  phone: string;
+  createdAt?: Date | null;
+  user?: Partial<User> | User | null;
+};
+
 @Entity('customers')
 export class Customer {
   @PrimaryGeneratedColumn()
@@ -27,7 +35,7 @@ export class Customer {
 
   @OneToOne(() => User)
   @JoinColumn()
-  user: User;
+  user: Relation<User>;
 
   @OneToMany(() => ReservationTicket, (r) => r.customer)
   reservations: Relation<ReservationTicket[]>;
@@ -35,12 +43,21 @@ export class Customer {
   @OneToMany(() => Purchase, (purchase) => purchase.customer)
   purchases: Relation<Purchase[]>;
 
-  constructor(address: string, phone: string, createdAt?: Date, user?: User) {
-    this.address = address;
-    this.phone = phone;
-    this.createdAt = createdAt ?? new Date();
-    if (user) {
-      this.user = user;
+  static create(props: CustomerProps): Customer {
+    const customer = new Customer();
+    customer.address = props.address;
+    customer.phone = props.phone;
+    customer.createdAt = customer.createdAt ?? new Date();
+
+    if (props.user) {
+      if (props.user instanceof User) {
+        customer.user = props.user;
+      } else {
+        const user = new User();
+        Object.assign(user, props.user);
+        customer.user = user;
+      }
     }
+    return customer;
   }
 }

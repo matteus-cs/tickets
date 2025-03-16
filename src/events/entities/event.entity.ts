@@ -9,6 +9,17 @@ import {
   Relation,
 } from 'typeorm';
 
+export type EventProps = {
+  id?: number | null;
+  name: string;
+  description: string;
+  date: Date;
+  location: string;
+  createdAt?: Date | null;
+  partner?: Partial<Partner>;
+  tickets?: Partial<Ticket>[];
+};
+
 @Entity('events')
 export class Event {
   @PrimaryGeneratedColumn()
@@ -35,47 +46,25 @@ export class Event {
   @OneToMany(() => Ticket, (ticket) => ticket.event)
   tickets: Relation<Ticket[]>;
 
-  /* constructor(
-    name: string,
-    description: string,
-    date: Date,
-    location: string,
-    createdAt: Date,
-    partner?: Partner,
-    tickets?: Ticket[],
-  ) {
-    this.name = name;
-    this.description = description;
-    this.date = date;
-    this.location = location;
-    this.createdAt = createdAt;
-    if (partner) {
-      this.partner = partner;
-    }
-    if (tickets) {
-      this.tickets = tickets;
-    }
-  } */
-  static create(
-    name: string,
-    description: string,
-    date: Date,
-    location: string,
-    createdAt: Date,
-    partner?: Partner,
-    tickets?: Ticket[],
-  ) {
+  static create(props: EventProps) {
     const event = new Event();
-    event.name = name;
-    event.description = description;
-    event.date = date;
-    event.location = location;
-    event.createdAt = createdAt;
-    if (partner) {
+    event.name = props.name;
+    event.description = props.description;
+    event.date = props.date;
+    event.location = props.location;
+    event.createdAt = props.createdAt ?? new Date();
+    if (props.partner) {
+      const partner = new Partner();
+      Object.assign(partner, props.partner);
       event.partner = partner;
     }
-    if (tickets) {
-      event.tickets = tickets;
+    if (props.tickets) {
+      event.tickets = [];
+      for (const t of props.tickets) {
+        const ticket = new Ticket();
+        Object.assign(ticket, t);
+        event.tickets.push(ticket);
+      }
     }
     return event;
   }

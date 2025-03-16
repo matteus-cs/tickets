@@ -16,6 +16,15 @@ export enum TicketStatusEnum {
   SOLD = 'sold',
 }
 
+export type TicketProps = {
+  id?: number | null;
+  location: string;
+  price: number;
+  status?: TicketStatusEnum;
+  createdAt?: Date | null;
+  event?: Partial<Event> | null;
+};
+
 @Entity('tickets')
 export class Ticket {
   @PrimaryGeneratedColumn()
@@ -46,25 +55,16 @@ export class Ticket {
   @ManyToMany(() => Purchase, (p) => p.tickets)
   purchases: Relation<Purchase[]>;
 
-  static create(
-    location: string,
-    price: number,
-    status?: TicketStatusEnum,
-    createdAt?: Date,
-    event?: Partial<Event>,
-  ) {
+  static create(props: TicketProps) {
     const ticket = new Ticket();
-    ticket.location = location;
-    ticket.price = price;
-    ticket.status = status ?? TicketStatusEnum.AVAILABLE;
-    ticket.createdAt = createdAt ?? new Date();
-    let iEvent: Event;
-    if (event && Object.keys(event).length > 0) {
-      iEvent = new Event();
-      for (const e in event) {
-        iEvent[e] = event[e];
-      }
-      ticket.event = iEvent;
+    ticket.location = props.location;
+    ticket.price = props.price;
+    ticket.status = props.status ?? TicketStatusEnum.AVAILABLE;
+    ticket.createdAt = props.createdAt ?? new Date();
+    if (props.event) {
+      const event = new Event();
+      Object.assign(event, props.event);
+      ticket.event = event;
     }
     return ticket;
   }

@@ -7,11 +7,8 @@ import {
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
 import { QueryFailedError } from 'typeorm';
 import { TicketStatusEnum } from '@/tickets/entities/ticket.entity';
-import { EPurchaseStatus, Purchase } from './entities/purchase.entity';
-import {
-  EReservationTicketStatus,
-  ReservationTicket,
-} from './entities/reservationTicket.entity';
+import { PurchaseStatusEnum, Purchase } from './entities/purchase.entity';
+import { ReservationTicket } from './entities/reservationTicket.entity';
 import { PaymentService } from '@/payment/payment.service';
 import { PurchaseRepository } from '@/repositories/purchase.repository';
 import { CustomerRepository } from '@/repositories/customer.repository';
@@ -62,26 +59,24 @@ export class PurchasesService {
       }
     }, 0);
 
-    const purchase = new Purchase(
-      new Date(),
-      amount as number,
-      undefined,
+    const purchase = Purchase.create({
+      purchaseDate: new Date(),
+      totalAmount: amount as number,
       customer,
       tickets,
-    );
+    });
     const { id: purchaseId } = await this.purchaseRepository.save(purchase);
     try {
       await this.reservationTicketRepository.startTransaction();
-      // purchase.status = EPurchaseStatus.PAID;
       await this.purchaseRepository.update(purchaseId, {
-        status: EPurchaseStatus.PAID,
+        status: PurchaseStatusEnum.PAID,
       });
       const reservations = tickets.map((t) => {
-        const reservation = new ReservationTicket();
-        reservation.reservationDate = new Date();
-        reservation.status = EReservationTicketStatus.RESERVED;
-        reservation.customer = customer;
-        reservation.ticket = t;
+        const reservation = ReservationTicket.create({
+          reservationDate: new Date(),
+          customer,
+          ticket: t,
+        });
         return reservation;
       });
       await this.reservationTicketRepository.save(reservations);
@@ -108,7 +103,7 @@ export class PurchasesService {
     } catch (error) {
       await this.reservationTicketRepository.rollbackTransaction();
       await this.purchaseRepository.update(purchaseId, {
-        status: EPurchaseStatus.ERROR,
+        status: PurchaseStatusEnum.ERROR,
       });
       if (error instanceof QueryFailedError) {
         throw new UnprocessableEntityException('ticket no longer available');
@@ -117,50 +112,5 @@ export class PurchasesService {
     } finally {
       await this.reservationTicketRepository.release();
     }
-    /*  try {
-      await queryRunner.startTransaction();
-
-      purchase.status = EPurchaseStatus.PAID;
-      await queryRunner.manager.save(purchase);
-
-      const reservations = tickets.map((t) => {
-        const reservation = new ReservationTicket();
-        reservation.reservationDate = new Date();
-        reservation.customer = customer;
-        reservation.ticket = t;
-        return reservation;
-      });
-      const arrPromise = reservations.map((r) => queryRunner.manager.save(r));
-      await Promise.all(arrPromise);
-
-      this.paymentService.processPayment(
-        {
-          name: customer.user.name,
-          email: customer.user.email,
-          phone: customer.phone,
-          address: customer.address,
-        },
-        purchase.totalAmount,
-        cardToken,
-      );
-      await Promise.all(
-        tickets.map((t) => {
-          return queryRunner.manager.update(Ticket, t.id, {
-            status: TicketStatusEnum.SOLD,
-          });
-        }),
-      );
-      await queryRunner.commitTransaction();
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      purchase.status = EPurchaseStatus.ERROR;
-      await queryRunner.manager.save(purchase);
-      if (error instanceof QueryFailedError) {
-        throw new UnprocessableEntityException('ticket no longer available');
-      }
-      throw error;
-    } finally {
-      await queryRunner.release();
-    } */
   }
 }
