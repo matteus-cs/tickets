@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
-import { InMemoryUserRepository } from '@/users/repositories/inMemoryUser.repository';
+import { InMemoryUserRepository } from '../../test/repositories/inMemoryUser.repository';
 import { UserRepository } from '@/repositories/user.repository';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './constants';

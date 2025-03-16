@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/require-await */
 import { EventRepository } from '@/repositories/event.repository';
-import { Event } from '../entities/event.entity';
+import { Event } from '@/events/entities/event.entity';
 
 export class InMemoryEventRepository implements EventRepository {
   public events: Event[] = [];

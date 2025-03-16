@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/require-await */
 import { ReservationTicketRepository } from '@/repositories/reservationTicket.repository';
-import { ReservationTicket } from '../entities/reservationTicket.entity';
+import { ReservationTicket } from '@/purchases/entities/reservationTicket.entity';
 
 export class InMemoryReservationTicketRepository
   implements ReservationTicketRepository

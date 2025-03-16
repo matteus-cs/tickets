@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/require-await */
 import { CustomerRepository } from '@/repositories/customer.repository';
-import { Customer } from '../entities/customer.entity';
+import { Customer } from '@/customers/entities/customer.entity';
 
 export class InMemoryCustomerRepository implements CustomerRepository {
   public customers: Customer[] = [];

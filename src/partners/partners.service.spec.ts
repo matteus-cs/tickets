@@ -1,5 +1,5 @@
 import { PartnersService } from './partners.service';
-import { InMemoryPartnerRepository } from './inMemoryPartner.repository';
+import { InMemoryPartnerRepository } from '../../test/repositories/inMemoryPartner.repository';
 import { Partner } from './entities/partner.entity';
 
 describe('PartnersService', () => {

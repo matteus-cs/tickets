@@ -1,7 +1,7 @@
 import { User } from '@/users/entities/user.entity';
 import { CustomersService } from './customers.service';
 import { Customer } from './entities/customer.entity';
-import { InMemoryCustomerRepository } from './repositories/inMemoryCustomer.repository';
+import { InMemoryCustomerRepository } from '../../test/repositories/inMemoryCustomer.repository';
 
 describe('CustomersService', () => {
   let service: CustomersService;

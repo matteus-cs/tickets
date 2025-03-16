@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/require-await */
 import { PurchaseRepository } from '@/repositories/purchase.repository';
-import { Purchase } from '../entities/purchase.entity';
+import { Purchase } from '@/purchases/entities/purchase.entity';
 
 export class InMemoryPurchaseRepository implements PurchaseRepository {
   public purchases: Purchase[] = [];

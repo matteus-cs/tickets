@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/require-await */
 import { PartnerRepository } from '@/repositories/partner.repository';
-import { Partner } from './entities/partner.entity';
+import { Partner } from '@/partners/entities/partner.entity';
 
 export class InMemoryPartnerRepository implements PartnerRepository {
   public partners: Partner[] = [];

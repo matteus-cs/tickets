@@ -1,8 +1,8 @@
-import { InMemoryTicketRepository } from '@/tickets/repositories/inMemory.ticket.repository';
+import { InMemoryTicketRepository } from '../../test/repositories/inMemory.ticket.repository';
 import { PurchasesService } from './purchases.service';
-import { InMemoryCustomerRepository } from '@/customers/repositories/inMemoryCustomer.repository';
-import { InMemoryPurchaseRepository } from './repositories/inMemoryPurchase.repostory';
-import { InMemoryReservationTicketRepository } from './repositories/inMemoryReservationTicket.repository';
+import { InMemoryCustomerRepository } from '../../test/repositories/inMemoryCustomer.repository';
+import { InMemoryPurchaseRepository } from '../../test/repositories/inMemoryPurchase.repostory';
+import { InMemoryReservationTicketRepository } from '../../test/repositories/inMemoryReservationTicket.repository';
 import { PaymentService } from '@/payment/payment.service';
 import { Ticket } from '@/tickets/entities/ticket.entity';
 import { Customer } from '@/customers/entities/customer.entity';

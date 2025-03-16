@@ -1,6 +1,6 @@
 import { EventsService } from './events.service';
-import { InMemoryEventRepository } from './repositories/inMemoryEvent.repository';
-import { InMemoryPartnerRepository } from '@/partners/inMemoryPartner.repository';
+import { InMemoryEventRepository } from '../../test/repositories/inMemoryEvent.repository';
+import { InMemoryPartnerRepository } from '../../test/repositories/inMemoryPartner.repository';
 import { Partner } from '@/partners/entities/partner.entity';
 import { User } from '@/users/entities/user.entity';
 import { Event } from './entities/event.entity';

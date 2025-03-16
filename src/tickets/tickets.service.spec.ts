@@ -1,6 +1,6 @@
 import { TicketsService } from './tickets.service';
-import { InMemoryTicketRepository } from './repositories/inMemory.ticket.repository';
-import { InMemoryPartnerRepository } from '@/partners/inMemoryPartner.repository';
+import { InMemoryTicketRepository } from '../../test/repositories/inMemory.ticket.repository';
+import { InMemoryPartnerRepository } from '../../test/repositories/inMemoryPartner.repository';
 import { Partner } from '@/partners/entities/partner.entity';
 import { User } from '@/users/entities/user.entity';
 
