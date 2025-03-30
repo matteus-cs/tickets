@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-import { IsDate, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateEventDto {
   @IsString()
@@ -10,7 +9,7 @@ export class CreateEventDto {
   @IsOptional()
   description: string;
 
-  @IsDate()
+  //@IsDate()
   @IsNotEmpty()
   date: Date;
 

@@ -18,7 +18,7 @@ export class AuthService {
   async signIn(
     email: string,
     password: string,
-  ): Promise<{ access_token: string }> {
+  ): Promise<{ accessToken: string }> {
     const user = await this.userRepository.findByEmail(email);
     if (!user) {
       throw new UnauthorizedException();
@@ -28,6 +28,6 @@ export class AuthService {
       throw new UnauthorizedException();
     }
     const payload: payloadType = { sub: user.id, email: user.email };
-    return { access_token: await this.jwtService.signAsync(payload) };
+    return { accessToken: await this.jwtService.signAsync(payload) };
   }
 }

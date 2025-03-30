@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { PartnersService } from './partners.service';
 import { PartnersController } from './partners.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -10,7 +10,10 @@ import { PartnerRepository } from '@/repositories/partner.repository';
 import { PartnerRepositoryAdapter } from './partner.repository.adapter';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Partner, User, Event]), EventsModule],
+  imports: [
+    TypeOrmModule.forFeature([Partner, User, Event]),
+    forwardRef(() => EventsModule),
+  ],
   controllers: [PartnersController],
   providers: [
     PartnersService,
@@ -19,5 +22,6 @@ import { PartnerRepositoryAdapter } from './partner.repository.adapter';
       useClass: PartnerRepositoryAdapter,
     },
   ],
+  exports: [PartnerRepository],
 })
 export class PartnersModule {}

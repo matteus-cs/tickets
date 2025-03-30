@@ -12,6 +12,7 @@ import { PurchaseRepository } from '@/repositories/purchase.repository';
 import { PurchaseRepositoryAdapter } from './repositories/purchase.repository.adapter';
 import { ReservationTicketRepositoryAdapter } from './repositories/reservationTicket.repository.adapter';
 import { TicketsModule } from '@/tickets/tickets.module';
+import { ReservationTicketRepository } from '@/repositories/reservationTicket.repository';
 
 @Module({
   imports: [
@@ -28,7 +29,7 @@ import { TicketsModule } from '@/tickets/tickets.module';
       useClass: PurchaseRepositoryAdapter,
     },
     {
-      provide: ReservationTicket,
+      provide: ReservationTicketRepository,
       useClass: ReservationTicketRepositoryAdapter,
     },
   ],

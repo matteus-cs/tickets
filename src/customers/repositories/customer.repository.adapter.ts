@@ -34,8 +34,8 @@ export class CustomerRepositoryAdapter implements CustomerRepository {
       const customer = await this.dataSource
         .getRepository(Customer)
         .createQueryBuilder('customers')
-        .leftJoinAndSelect('customer.user', 'user')
-        .where('customer.id = :id', { id })
+        .leftJoinAndSelect('customers.user', 'users')
+        .where('customers.id = :id', { id })
         .getOne();
       return customer;
     }

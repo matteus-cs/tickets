@@ -1,10 +1,12 @@
 import { EventRepository } from '@/repositories/event.repository';
 import { Event } from '../entities/event.entity';
 import { DataSource, Repository } from 'typeorm';
+import { Injectable } from '@nestjs/common';
 
+@Injectable()
 export class EventRepositoryAdapter implements EventRepository {
   private eventRepository: Repository<Event>;
-  constructor(private readonly dataSource: DataSource) {
+  constructor(dataSource: DataSource) {
     this.eventRepository = dataSource.getRepository(Event);
   }
   async save(event: Event): Promise<void> {

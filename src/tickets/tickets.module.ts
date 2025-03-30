@@ -7,9 +7,10 @@ import { Partner } from 'src/partners/entities/partner.entity';
 import { Event } from 'src/events/entities/event.entity';
 import { TicketRepository } from '@/repositories/ticket.repository';
 import { TicketRepositoryAdapter } from './repositories/ticket.repository.adapter';
+import { PartnersModule } from '@/partners/partners.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Ticket, Partner, Event])],
+  imports: [TypeOrmModule.forFeature([Ticket, Partner, Event]), PartnersModule],
   controllers: [TicketsController],
   providers: [
     TicketsService,

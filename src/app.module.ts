@@ -17,26 +17,35 @@ import { PurchasesModule } from './purchases/purchases.module';
 import { Purchase } from './purchases/entities/purchase.entity';
 import { ReservationTicket } from './purchases/entities/reservationTicket.entity';
 import { PaymentModule } from './payment/payment.module';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: 'localhost',
-      port: 33060,
-      username: 'root',
-      password: 'root',
-      database: 'tickets',
-      entities: [
-        User,
-        Partner,
-        Customer,
-        Event,
-        Ticket,
-        Purchase,
-        ReservationTicket,
-      ],
-      synchronize: true,
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type: 'mysql',
+        host: configService.get<string>('DB_HOST'),
+        port: configService.get<number>('DB_PORT'),
+        username: configService.get<string>('DB_USER'),
+        password: configService.get<string>('DB_PASSWORD'),
+        database: configService.get<string>('DB_NAME'),
+        autoLoadEntities: true,
+        synchronize: true,
+        entities: [
+          User,
+          Partner,
+          Customer,
+          Event,
+          Ticket,
+          Purchase,
+          ReservationTicket,
+        ],
+      }),
     }),
     UsersModule,
     PartnersModule,

@@ -7,6 +7,9 @@ import { Event } from '@/events/entities/event.entity';
 @Injectable()
 export class TicketRepositoryAdapter implements TicketRepository {
   constructor(private dataSource: DataSource) {}
+  async update(id: number, data: Partial<Ticket>): Promise<void> {
+    await this.dataSource.getRepository(Ticket).update({ id }, data);
+  }
 
   create(
     location: string,

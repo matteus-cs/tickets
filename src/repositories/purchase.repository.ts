@@ -8,5 +8,5 @@ import { Purchase } from '@/purchases/entities/purchase.entity';
 
 export abstract class PurchaseRepository {
   abstract save(purchase: Purchase): Promise<Purchase>;
-  abstract update(idi: number, data: Partial<Purchase>): Promise<void>;
+  abstract update(id: number, data: Partial<Purchase>): Promise<void>;
 }
