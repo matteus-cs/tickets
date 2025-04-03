@@ -85,9 +85,12 @@ export class PurchasesService {
 
     try {
       await this.reservationTicketRepository.startTransaction();
+      const now = new Date();
+      const expiresAt = new Date(now.getTime() + 15 * 60000);
       const reservations = tickets.map((t) => {
         const reservation = ReservationTicket.create({
-          reservationDate: new Date(),
+          reservationDate: now,
+          expiresAt,
           customer,
           ticket: t,
         });
@@ -138,9 +141,12 @@ export class PurchasesService {
         const paymentIntent = event.data.object;
         const purchaseId = Number(paymentIntent.metadata.purchaseId);
 
-        await this.purchaseRepository.update(purchaseId, {
-          status: PurchaseStatusEnum.PAID,
-        });
+        await this.purchaseRepository.update(
+          { id: purchaseId },
+          {
+            status: PurchaseStatusEnum.PAID,
+          },
+        );
         break;
       }
       case 'payment_intent.payment_failed': {
@@ -150,9 +156,12 @@ export class PurchasesService {
           paymentIntent.metadata.ticketIds,
         );
 
-        await this.purchaseRepository.update(purchaseId, {
-          status: PurchaseStatusEnum.ERROR,
-        });
+        await this.purchaseRepository.update(
+          { id: purchaseId },
+          {
+            status: PurchaseStatusEnum.ERROR,
+          },
+        );
 
         await Promise.all(
           ticketIds.map((id) => {
@@ -169,6 +178,13 @@ export class PurchasesService {
         );
         break;
       }
+
+      case 'payment_intent.requires_action': {
+        const paymentIntent = event.data.object;
+        console.log(paymentIntent);
+        break;
+      }
+
       default:
         // Unexpected event type
         console.log(`Unhandled event type ${event.type}.`);

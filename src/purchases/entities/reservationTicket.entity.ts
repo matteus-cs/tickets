@@ -15,6 +15,7 @@ export type ReservationTicketProps = {
   id?: number | null;
   reservationDate?: Date | null;
   status?: ReservationTicketStatusEnum | null;
+  expiresAt: Date;
   ticket?: Partial<Ticket> | null;
   customer?: Partial<Customer> | null;
 };
@@ -54,12 +55,17 @@ export class ReservationTicket {
   })
   customer: Relation<Customer>;
 
+  @Column({ nullable: true })
+  expiresAt: Date;
+
   static create(props: ReservationTicketProps) {
     const reservationTicket = new ReservationTicket();
 
     reservationTicket.reservationDate = props.reservationDate ?? new Date();
     reservationTicket.status =
       props.status ?? ReservationTicketStatusEnum.RESERVED;
+
+    reservationTicket.expiresAt = props.expiresAt;
 
     if (props.ticket) {
       const ticket = new Ticket();

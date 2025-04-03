@@ -1,12 +1,15 @@
-//  customer -> find by id {user: true}
-
 import { Purchase } from '@/purchases/entities/purchase.entity';
 
-// tickets -> find by id
-
-// purchase -> save
-
+export type UpdateWherePurchase =
+  | { id: number; tickets?: never }
+  | {
+      id?: never;
+      tickets: { id: number };
+    };
 export abstract class PurchaseRepository {
   abstract save(purchase: Purchase): Promise<Purchase>;
-  abstract update(id: number, data: Partial<Purchase>): Promise<void>;
+  abstract update(
+    updateWherePurchase: UpdateWherePurchase,
+    data: Partial<Purchase>,
+  ): Promise<void>;
 }

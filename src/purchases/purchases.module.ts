@@ -13,6 +13,7 @@ import { PurchaseRepositoryAdapter } from './repositories/purchase.repository.ad
 import { ReservationTicketRepositoryAdapter } from './repositories/reservationTicket.repository.adapter';
 import { TicketsModule } from '@/tickets/tickets.module';
 import { ReservationTicketRepository } from '@/repositories/reservationTicket.repository';
+import { TasksService } from './task.service';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ReservationTicketRepository } from '@/repositories/reservationTicket.re
   controllers: [PurchasesController],
   providers: [
     PurchasesService,
+    TasksService,
     {
       provide: PurchaseRepository,
       useClass: PurchaseRepositoryAdapter,

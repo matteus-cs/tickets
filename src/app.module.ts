@@ -18,6 +18,7 @@ import { Purchase } from './purchases/entities/purchase.entity';
 import { ReservationTicket } from './purchases/entities/reservationTicket.entity';
 import { PaymentModule } from './payment/payment.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         ],
       }),
     }),
+    ScheduleModule.forRoot(),
     UsersModule,
     PartnersModule,
     CustomersModule,
