@@ -1,5 +1,6 @@
 import {
   ReservationTicketRepository,
+  UpdateWhere,
   WhereDelete,
 } from '@/repositories/reservationTicket.repository';
 import { ReservationTicket } from '../entities/reservationTicket.entity';
@@ -12,6 +13,12 @@ export class ReservationTicketRepositoryAdapter
 {
   private queryRunner?: QueryRunner | null;
   constructor(private dataSource: DataSource) {}
+  async update(
+    updateWhere: UpdateWhere,
+    data: Partial<ReservationTicket>,
+  ): Promise<void> {
+    await this.dataSource.manager.update(ReservationTicket, updateWhere, data);
+  }
   async findExpired(expiresAt: Date): Promise<ReservationTicket[]> {
     return await this.dataSource.manager.findBy(ReservationTicket, {
       expiresAt: LessThan(expiresAt),

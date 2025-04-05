@@ -181,7 +181,26 @@ export class PurchasesService {
 
       case 'payment_intent.requires_action': {
         const paymentIntent = event.data.object;
-        console.log(paymentIntent);
+        const ticketIds: number[] = JSON.parse(
+          paymentIntent.metadata.ticketIds,
+        );
+        const expiresAt = paymentIntent.next_action?.boleto_display_details
+          ?.expires_at
+          ? new Date(
+              paymentIntent.next_action?.boleto_display_details.expires_at *
+                1000,
+            )
+          : new Date(new Date().getTime() + 3 * 24 * 60 * 60 * 1000);
+        await Promise.all(
+          ticketIds.map((id) => {
+            return this.reservationTicketRepository.update(
+              { ticket: { id } },
+              {
+                expiresAt,
+              },
+            );
+          }),
+        );
         break;
       }
 
