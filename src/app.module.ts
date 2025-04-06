@@ -16,9 +16,9 @@ import { Ticket } from './tickets/entities/ticket.entity';
 import { PurchasesModule } from './purchases/purchases.module';
 import { Purchase } from './purchases/entities/purchase.entity';
 import { ReservationTicket } from './purchases/entities/reservationTicket.entity';
-import { PaymentModule } from './payment/payment.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
+import { StripeModule } from './stripe/stripe.module';
 
 @Module({
   imports: [
@@ -56,7 +56,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     EventsModule,
     TicketsModule,
     PurchasesModule,
-    PaymentModule,
+    StripeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

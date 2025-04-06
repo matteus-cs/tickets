@@ -7,7 +7,7 @@ import {
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
 import { QueryFailedError } from 'typeorm';
 import { TicketStatusEnum } from '@/tickets/entities/ticket.entity';
-import { PurchaseStatusEnum, Purchase } from './entities/purchase.entity';
+import { Purchase } from './entities/purchase.entity';
 import { ReservationTicket } from './entities/reservationTicket.entity';
 import { PurchaseRepository } from '@/repositories/purchase.repository';
 import { CustomerRepository } from '@/repositories/customer.repository';
@@ -15,6 +15,7 @@ import { TicketRepository } from '@/repositories/ticket.repository';
 import { ReservationTicketRepository } from '@/repositories/reservationTicket.repository';
 import Stripe from 'stripe';
 import { ConfigService } from '@nestjs/config';
+import { BasePaymentService } from '@/payment/basePayment.service';
 
 @Injectable()
 export class PurchasesService {
@@ -27,6 +28,8 @@ export class PurchasesService {
     private purchaseRepository: PurchaseRepository,
 
     private reservationTicketRepository: ReservationTicketRepository,
+
+    private paymentService: BasePaymentService,
 
     private configService: ConfigService,
   ) {
@@ -72,14 +75,12 @@ export class PurchasesService {
     });
     const { id: purchaseId } = await this.purchaseRepository.save(purchase);
 
-    const paymentIntents = await this.stripe.paymentIntents.create({
+    const { clientSecret } = await this.paymentService.processPayment({
       amount: Math.round((amount as number) * 100),
-      currency: 'brl',
-      payment_method_types: ['card', 'boleto'],
       metadata: {
-        customerId: customer.id.toString(),
-        purchaseId: purchaseId.toString(),
-        ticketIds: JSON.stringify(ticketIds),
+        customerId: customer.id,
+        purchaseId: purchaseId,
+        ticketIds,
       },
     });
 
@@ -114,99 +115,10 @@ export class PurchasesService {
       }
       throw error;
     }
-    return { clientSecret: paymentIntents.client_secret };
+    return { clientSecret };
   }
 
   async confirmPayment(payload: any, signature: string) {
-    const endpointSecret = this.configService.get<string>(
-      'WEBHOOK_SECRET',
-    ) as string;
-    let event: Stripe.Event;
-    try {
-      event = this.stripe.webhooks.constructEvent(
-        payload,
-        signature,
-        endpointSecret,
-      );
-    } catch (err) {
-      console.log(err);
-      throw new BadRequestException(
-        `Webhook signature verification failed.`,
-        err.message,
-      );
-    }
-
-    switch (event.type) {
-      case 'payment_intent.succeeded': {
-        const paymentIntent = event.data.object;
-        const purchaseId = Number(paymentIntent.metadata.purchaseId);
-
-        await this.purchaseRepository.update(
-          { id: purchaseId },
-          {
-            status: PurchaseStatusEnum.PAID,
-          },
-        );
-        break;
-      }
-      case 'payment_intent.payment_failed': {
-        const paymentIntent = event.data.object;
-        const purchaseId = Number(paymentIntent.metadata.purchaseId);
-        const ticketIds: number[] = JSON.parse(
-          paymentIntent.metadata.ticketIds,
-        );
-
-        await this.purchaseRepository.update(
-          { id: purchaseId },
-          {
-            status: PurchaseStatusEnum.ERROR,
-          },
-        );
-
-        await Promise.all(
-          ticketIds.map((id) => {
-            return this.reservationTicketRepository.delete({ ticket: { id } });
-          }),
-        );
-
-        await Promise.all(
-          ticketIds.map((id) => {
-            return this.ticketRepository.update(id, {
-              status: TicketStatusEnum.AVAILABLE,
-            });
-          }),
-        );
-        break;
-      }
-
-      case 'payment_intent.requires_action': {
-        const paymentIntent = event.data.object;
-        const ticketIds: number[] = JSON.parse(
-          paymentIntent.metadata.ticketIds,
-        );
-        const expiresAt = paymentIntent.next_action?.boleto_display_details
-          ?.expires_at
-          ? new Date(
-              paymentIntent.next_action?.boleto_display_details.expires_at *
-                1000,
-            )
-          : new Date(new Date().getTime() + 3 * 24 * 60 * 60 * 1000);
-        await Promise.all(
-          ticketIds.map((id) => {
-            return this.reservationTicketRepository.update(
-              { ticket: { id } },
-              {
-                expiresAt,
-              },
-            );
-          }),
-        );
-        break;
-      }
-
-      default:
-        // Unexpected event type
-        console.log(`Unhandled event type ${event.type}.`);
-    }
+    await this.paymentService.confirmedPayment({ payload, signature });
   }
 }

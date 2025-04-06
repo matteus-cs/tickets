@@ -3,7 +3,7 @@ import { PurchasesService } from './purchases.service';
 import { InMemoryCustomerRepository } from '../../test/repositories/inMemoryCustomer.repository';
 import { InMemoryPurchaseRepository } from '../../test/repositories/inMemoryPurchase.repostory';
 import { InMemoryReservationTicketRepository } from '../../test/repositories/inMemoryReservationTicket.repository';
-import { PaymentService } from '@/payment/payment.service';
+import { PaymentService } from '@/payment/basePayment.service';
 import { Ticket } from '@/tickets/entities/ticket.entity';
 import { Customer } from '@/customers/entities/customer.entity';
 import { PurchaseStatusEnum } from './entities/purchase.entity';
