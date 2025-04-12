@@ -2,12 +2,10 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
-  UnprocessableEntityException,
 } from '@nestjs/common';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
-import { QueryFailedError } from 'typeorm';
 import { TicketStatusEnum } from '@/tickets/entities/ticket.entity';
-import { Purchase } from './entities/purchase.entity';
+import { Purchase, PurchaseStatusEnum } from './entities/purchase.entity';
 import { ReservationTicket } from './entities/reservationTicket.entity';
 import { PurchaseRepository } from '@/repositories/purchase.repository';
 import { CustomerRepository } from '@/repositories/customer.repository';
@@ -110,9 +108,10 @@ export class PurchasesService {
       );
     } catch (error) {
       await this.reservationTicketRepository.rollbackTransaction();
-      if (error instanceof QueryFailedError) {
-        throw new UnprocessableEntityException('ticket no longer available');
-      }
+      await this.purchaseRepository.update(
+        { id: purchaseId },
+        { status: PurchaseStatusEnum.ERROR },
+      );
       throw error;
     }
     return { clientSecret };

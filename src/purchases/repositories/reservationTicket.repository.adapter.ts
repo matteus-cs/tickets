@@ -4,8 +4,8 @@ import {
   WhereDelete,
 } from '@/repositories/reservationTicket.repository';
 import { ReservationTicket } from '../entities/reservationTicket.entity';
-import { Injectable } from '@nestjs/common';
-import { DataSource, LessThan, QueryRunner } from 'typeorm';
+import { Injectable, UnprocessableEntityException } from '@nestjs/common';
+import { DataSource, LessThan, QueryFailedError, QueryRunner } from 'typeorm';
 
 @Injectable()
 export class ReservationTicketRepositoryAdapter
@@ -59,6 +59,12 @@ export class ReservationTicketRepositoryAdapter
     const repo = this.queryRunner
       ? this.queryRunner.manager
       : this.dataSource.manager;
-    await repo.save(reservationTicket);
+    try {
+      await repo.save(reservationTicket);
+    } catch (error) {
+      if (error instanceof QueryFailedError) {
+        throw new UnprocessableEntityException('ticket no longer available');
+      }
+    }
   }
 }
