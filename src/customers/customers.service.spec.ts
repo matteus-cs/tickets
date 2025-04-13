@@ -23,6 +23,25 @@ describe('CustomersService', () => {
 
     expect(customerRepository.customers).toHaveLength(1);
   });
+  it('should return an error if customer already exits', async () => {
+    await service.create({
+      name: 'Customer',
+      email: 'customer@email.com',
+      password: 'pwd12345',
+      address: 'in wonderland',
+      phone: '99 99999-9999',
+    });
+
+    await expect(() =>
+      service.create({
+        name: 'Customer',
+        email: 'customer@email.com',
+        password: 'pwd12345',
+        address: 'in wonderland',
+        phone: '99 99999-9999',
+      }),
+    ).rejects.toThrow();
+  });
 
   it('should be able find customer by user id', async () => {
     const date = new Date();
