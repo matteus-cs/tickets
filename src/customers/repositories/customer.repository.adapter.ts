@@ -1,4 +1,7 @@
-import { CustomerRepository } from '@/repositories/customer.repository';
+import {
+  CustomerRepository,
+  WhereFindByUser,
+} from '@/repositories/customer.repository';
 import { Customer } from '../entities/customer.entity';
 import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
@@ -23,10 +26,15 @@ export class CustomerRepositoryAdapter implements CustomerRepository {
       await queryRunner.release();
     }
   }
-  async findByUserId(userId: number): Promise<Customer | null> {
+  async findByUser(where: WhereFindByUser): Promise<Customer | null> {
+    if (where.id) {
+      return await this.dataSource
+        .getRepository(Customer)
+        .findOneBy({ user: { id: where.id } });
+    }
     return await this.dataSource
       .getRepository(Customer)
-      .findOneBy({ user: { id: userId } });
+      .findOneBy({ user: { email: where.email } });
   }
 
   async findById(id: number, user: boolean): Promise<Customer | null> {
