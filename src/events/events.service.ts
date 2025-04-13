@@ -45,9 +45,9 @@ export class EventsService {
 
   async findById(id: number, partnerId?: number) {
     if (partnerId) {
-      const partner = await this.eventsRepository.findById(id, partnerId);
-      if (!partner) throw new NotFoundException();
-      return partner;
+      const event = await this.eventsRepository.findById(id, partnerId);
+      if (!event) throw new NotFoundException();
+      return event;
     }
     const partner = await this.eventsRepository.findById(id);
     if (!partner) throw new NotFoundException();

@@ -13,6 +13,12 @@ import { EventsService } from '@/events/events.service';
 import { AuthGuard } from '@/auth/auth.guard';
 import { CreateEventDto } from '@/events/dto/create-event.dto';
 import { payloadType } from '@/auth/auth.service';
+import {
+  ApiBearerAuth,
+  ApiNotFoundResponse,
+  ApiResponse,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 
 @Controller('partners')
 export class PartnersController {
@@ -22,18 +28,63 @@ export class PartnersController {
   ) {}
 
   @Post()
+  @ApiResponse({ status: 201, description: 'Successfully created' })
+  @ApiResponse({
+    status: 400,
+    description:
+      'When you try to create a partner with an email already registered',
+    schema: {
+      properties: {
+        message: {
+          type: 'string',
+          example: 'partner already exists',
+        },
+        error: {
+          type: 'string',
+          example: 'Bad Request',
+        },
+        statusCode: {
+          type: 'string',
+          example: 400,
+        },
+      },
+    },
+  })
   create(@Body() createPartnerDto: CreatePartnerDto) {
     return this.partnersService.create(createPartnerDto);
   }
 
   @UseGuards(AuthGuard)
   @Post('events')
+  @ApiBearerAuth()
+  @ApiResponse({ status: 201, description: 'Successfully created' })
+  @ApiUnauthorizedResponse({ description: 'When a user is not a partner' })
   createEvents(@Body() createEventDto: CreateEventDto, @Request() req) {
     return this.eventsService.create(createEventDto, req.user as payloadType);
   }
 
   @UseGuards(AuthGuard)
   @Get('events')
+  @ApiBearerAuth()
+  @ApiResponse({
+    status: 200,
+    description: 'array of partner events',
+    schema: {
+      type: 'array',
+      items: {
+        properties: {
+          id: { type: 'number' },
+          name: { type: 'string' },
+          description: { type: 'string' },
+          date: { type: 'string', format: 'date' },
+          location: { type: 'string' },
+          createdAt: { type: 'string', format: 'date' },
+        },
+        required: ['false'],
+      },
+    },
+  })
+  @ApiUnauthorizedResponse({ description: 'When a user is not a partner' })
   async findEventAll(@Request() req) {
     const partner = await this.partnersService.findByUserId(req.user.sub);
     if (!partner) {
@@ -44,6 +95,24 @@ export class PartnersController {
 
   @UseGuards(AuthGuard)
   @Get('events/:id')
+  @ApiBearerAuth()
+  @ApiResponse({
+    status: 200,
+    description: 'a event of partner',
+    schema: {
+      properties: {
+        id: { type: 'number' },
+        name: { type: 'string' },
+        description: { type: 'string' },
+        date: { type: 'string', format: 'date' },
+        location: { type: 'string' },
+        createdAt: { type: 'string', format: 'date' },
+      },
+      required: ['false'],
+    },
+  })
+  @ApiUnauthorizedResponse({ description: 'When a user is not a partner' })
+  @ApiNotFoundResponse({ description: 'When event not found by passed id' })
   async findEventById(@Request() req) {
     const partner = await this.partnersService.findByUserId(req.user.sub);
     if (!partner) {

@@ -1,0 +1,12 @@
+
+### partner
+POST  http://localhost:3000/partners  HTTP/1.1
+Content-Type: application/json
+
+{
+    "name": "John Doe",
+    "email": "john@email.com",
+    "password": "pass1234",
+    "companyName": "doe ilimited"
+}
+###
