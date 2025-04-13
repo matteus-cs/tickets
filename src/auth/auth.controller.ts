@@ -11,6 +11,11 @@ import {
 import { AuthService } from './auth.service';
 import { SignInDto } from './dto/signInDto';
 import { AuthGuard } from './auth.guard';
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 
 @Controller('auth')
 export class AuthController {
@@ -18,14 +23,29 @@ export class AuthController {
 
   @HttpCode(HttpStatus.OK)
   @Post('login')
+  @ApiOkResponse({
+    schema: { properties: { accessToken: { type: 'string' } } },
+  })
+  @ApiUnauthorizedResponse({ description: 'incorrect e-mail or password' })
   signIn(@Body() signInDto: SignInDto) {
     return this.authService.signIn(signInDto.email, signInDto.password);
   }
 
   @UseGuards(AuthGuard)
   @Get('profile')
+  @ApiBearerAuth()
+  @ApiOkResponse({
+    description: "responds with the logged-in user's data",
+    schema: {
+      properties: {
+        sub: { type: 'number' },
+        email: { type: 'string' },
+        iat: { type: 'number' },
+        exp: { type: 'number' },
+      },
+    },
+  })
   getProfile(@Request() req) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
     return req.user;
   }
 }
