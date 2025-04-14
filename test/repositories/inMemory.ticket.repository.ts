@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/require-await */
 import { TicketRepository } from '@/repositories/ticket.repository';
-import { Ticket } from '@/tickets/entities/ticket.entity';
+import { Ticket, TicketStatusEnum } from '@/tickets/entities/ticket.entity';
 
 export class InMemoryTicketRepository implements TicketRepository {
   public tickets: Ticket[] = [];
@@ -18,6 +18,23 @@ export class InMemoryTicketRepository implements TicketRepository {
 
   async findById(id: number): Promise<Ticket | null> {
     return this.tickets.find((t) => t.id === id) ?? null;
+  }
+
+  async findByEventId(
+    eventId: number,
+    limit: number,
+    skip: number,
+    status?: TicketStatusEnum,
+  ): Promise<Ticket[]> {
+    let arr: Ticket[];
+    if (status) {
+      arr = this.tickets.filter(
+        (t) => t.event.id === eventId && t.status === status,
+      );
+    }
+
+    arr = this.tickets.filter((t) => t.event.id === eventId);
+    return arr.slice(skip, skip + limit);
   }
 
   async update(id: number, data: Partial<Ticket>): Promise<void> {

@@ -3,6 +3,7 @@ import { InMemoryTicketRepository } from '../../test/repositories/inMemory.ticke
 import { InMemoryPartnerRepository } from '../../test/repositories/inMemoryPartner.repository';
 import { Partner } from '@/partners/entities/partner.entity';
 import { User } from '@/users/entities/user.entity';
+import { Ticket, TicketStatusEnum } from './entities/ticket.entity';
 
 describe('TicketsService', () => {
   let service: TicketsService;
@@ -49,5 +50,39 @@ describe('TicketsService', () => {
     await expect(
       service.create([{ location: 'vip', price: 30, quantity: 10 }], 1, 2),
     ).rejects.toThrow();
+  });
+  it('should be able return tickets', async () => {
+    const arr = Array.from({ length: 20 }).map(() =>
+      Ticket.create({ location: 'vip', price: 30, event: { id: 1 } }),
+    );
+    await ticketRepository.save(arr);
+    const arr2 = Array.from({ length: 20 }).map(() =>
+      Ticket.create({ location: 'vip', price: 30, event: { id: 2 } }),
+    );
+    await ticketRepository.save(arr2);
+
+    const arr3 = Array.from({ length: 20 }).map(() =>
+      Ticket.create({
+        location: 'vip',
+        price: 30,
+        status: TicketStatusEnum.SOLD,
+        event: { id: 2 },
+      }),
+    );
+    await ticketRepository.save(arr3);
+
+    const page = 2;
+    const tickets = await service.findByEventId(1, 2);
+
+    const ticketsSold = await service.findByEventId(
+      1,
+      2,
+      TicketStatusEnum.SOLD,
+    );
+
+    expect(tickets).toHaveLength(10);
+    expect(tickets[tickets.length - 1].id).toBe(tickets.length * page);
+
+    expect(ticketsSold).toHaveLength(10);
   });
 });
