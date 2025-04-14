@@ -12,6 +12,7 @@ import { TicketsService } from './tickets.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { AuthGuard } from '@/auth/auth.guard';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiQuery,
   ApiResponse,
@@ -25,6 +26,7 @@ export class TicketsController {
 
   @UseGuards(AuthGuard)
   @Post()
+  @ApiBearerAuth()
   @ApiBody({ type: [CreateTicketDto] })
   @ApiResponse({ status: 201, description: 'Successfully created' })
   @ApiUnauthorizedResponse({ description: 'When a user is not a partner' })
