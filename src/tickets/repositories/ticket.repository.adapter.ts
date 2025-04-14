@@ -1,12 +1,37 @@
 import { TicketRepository } from '@/repositories/ticket.repository';
 import { Injectable } from '@nestjs/common';
-import { DataSource } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Ticket, TicketStatusEnum } from '../entities/ticket.entity';
 import { Event } from '@/events/entities/event.entity';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class TicketRepositoryAdapter implements TicketRepository {
-  constructor(private dataSource: DataSource) {}
+  constructor(
+    @InjectRepository(Ticket)
+    private ticketRepository: Repository<Ticket>,
+    private dataSource: DataSource,
+  ) {}
+  async findByEventId(
+    eventId: number,
+    limit: number,
+    skip: number,
+    status?: TicketStatusEnum,
+  ): Promise<Ticket[]> {
+    if (status) {
+      return this.ticketRepository.find({
+        where: { event: { id: eventId }, status },
+        skip,
+        take: limit,
+      });
+    }
+    return this.ticketRepository.find({
+      where: { event: { id: eventId } },
+      skip,
+      take: limit,
+    });
+  }
+
   async update(id: number, data: Partial<Ticket>): Promise<void> {
     await this.dataSource.getRepository(Ticket).update({ id }, data);
   }

@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { TicketRepository } from '@/repositories/ticket.repository';
 import { PartnerRepository } from '@/repositories/partner.repository';
-import { Ticket } from './entities/ticket.entity';
+import { Ticket, TicketStatusEnum } from './entities/ticket.entity';
 
 @Injectable()
 export class TicketsService {
@@ -45,5 +45,20 @@ export class TicketsService {
     }, []);
 
     await this.ticketsRepository.save(tickets);
+  }
+
+  async findByEventId(
+    eventId: number,
+    page: number,
+    status?: TicketStatusEnum,
+  ) {
+    const limit = 10;
+    const skip = page * limit - limit;
+    return await this.ticketsRepository.findByEventId(
+      eventId,
+      10,
+      skip,
+      status,
+    );
   }
 }
