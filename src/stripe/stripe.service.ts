@@ -52,14 +52,21 @@ export class StripeService implements BasePaymentService {
       case 'payment_intent.succeeded': {
         const paymentIntent = event.data.object;
         const purchaseId = Number(paymentIntent.metadata.purchaseId);
-
-        console.log(purchaseId);
+        const ticketIds: number[] = JSON.parse(
+          paymentIntent.metadata.ticketIds,
+        );
 
         await this.purchaseRepository.update(
           { id: purchaseId },
           {
             status: PurchaseStatusEnum.PAID,
           },
+        );
+
+        await Promise.all(
+          ticketIds.map((id) => {
+            return this.reservationTicketRepository.delete({ ticket: { id } });
+          }),
         );
         break;
       }

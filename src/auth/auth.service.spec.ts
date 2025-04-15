@@ -39,8 +39,8 @@ describe('AuthService', () => {
 
   it('should be able sing in', async () => {
     jest.spyOn(User, 'comparePassword').mockReturnValue(true);
-    const { access_token } = await service.signIn('john@email.com', 'pdw1234');
-    expect(access_token).toBeTruthy();
+    const { accessToken } = await service.signIn('john@email.com', 'pdw1234');
+    expect(accessToken).toBeTruthy();
   });
 
   it('should throw unauthorized error if cannot found user', async () => {

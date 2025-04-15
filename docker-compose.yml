@@ -1,4 +1,15 @@
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+    container_name: container_app
+    ports:
+      - 3000:3000
+    depends_on: [mysql]
   mysql:
     image: mysql:8.0.30-debian
     environment:

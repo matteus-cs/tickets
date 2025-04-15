@@ -1,0 +1,31 @@
+# Node.js
+node_modules
+npm-debug.log
+yarn-error.log
+.env
+.env.*
+dist   
+coverage
+*.tsbuildinfo
+
+# Logs
+*.log
+logs
+*.out
+*.pid
+
+# IDEs/Editors
+.vscode
+.idea
+*.swp
+*.swo
+
+# Git
+.git
+.gitignore
+
+# OS/geral
+.DS_Store
+Thumbs.db
+
+README.md
