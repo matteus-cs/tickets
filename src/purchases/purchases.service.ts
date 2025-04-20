@@ -11,13 +11,11 @@ import { PurchaseRepository } from '@/repositories/purchase.repository';
 import { CustomerRepository } from '@/repositories/customer.repository';
 import { TicketRepository } from '@/repositories/ticket.repository';
 import { ReservationTicketRepository } from '@/repositories/reservationTicket.repository';
-import Stripe from 'stripe';
 import { ConfigService } from '@nestjs/config';
 import { BasePaymentService } from '@/payment/basePayment.service';
 
 @Injectable()
 export class PurchasesService {
-  private stripe: Stripe;
   constructor(
     private customerRepository: CustomerRepository,
 
@@ -30,11 +28,7 @@ export class PurchasesService {
     private paymentService: BasePaymentService,
 
     private configService: ConfigService,
-  ) {
-    this.stripe = new Stripe(
-      this.configService.get<string>('STRIPE_API_KEY') as string,
-    );
-  }
+  ) {}
   async create(createPurchaseDto: CreatePurchaseDto, customerId: number) {
     const { ticketIds } = createPurchaseDto;
     const customer = await this.customerRepository.findById(customerId, true);
