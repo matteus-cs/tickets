@@ -69,7 +69,7 @@ export class PurchasesController {
     return this.purchasesService.create(createPurchaseDto, customer.id);
   }
 
-  @Post('confirmed-payment/webhook')
+  @Post('confirm-payment/webhook')
   async confirmedPayment(@Req() req: Request) {
     const event = req.body;
     const signature = req.headers['stripe-signature'] as string;

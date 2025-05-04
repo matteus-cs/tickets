@@ -15,9 +15,10 @@ import { AuthGuard } from '@/auth/auth.guard';
 import {
   ApiBearerAuth,
   ApiBody,
+  ApiForbiddenResponse,
+  ApiParam,
   ApiQuery,
   ApiResponse,
-  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { TicketStatusEnum } from './entities/ticket.entity';
 import { CustomerRepository } from '@/repositories/customer.repository';
@@ -32,9 +33,10 @@ export class TicketsController {
   @UseGuards(AuthGuard)
   @Post()
   @ApiBearerAuth()
+  @ApiParam({ name: 'eventId', schema: { type: 'number' }, required: true })
   @ApiBody({ type: [CreateTicketDto] })
   @ApiResponse({ status: 201, description: 'Successfully created' })
-  @ApiUnauthorizedResponse({ description: 'When a user is not a partner' })
+  @ApiForbiddenResponse({ description: 'When a user is not a partner' })
   create(@Body() createTicketDto: CreateTicketDto[], @Request() req) {
     return this.ticketsService.create(
       createTicketDto,
@@ -44,6 +46,7 @@ export class TicketsController {
   }
 
   @Get()
+  @ApiQuery({ name: 'eventId', schema: { type: 'number' }, required: true })
   @ApiQuery({ name: 'page', schema: { type: 'number' }, required: false })
   @ApiQuery({
     name: 'status',
@@ -59,7 +62,7 @@ export class TicketsController {
   }
 
   @UseGuards(AuthGuard)
-  @Get('/ticket-hash')
+  @Get('/hash')
   @ApiQuery({
     name: 'ticketId',
     schema: { type: 'number' },

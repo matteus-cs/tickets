@@ -1,6 +1,6 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { EventsService } from './events.service';
-import { ApiNotFoundResponse, ApiResponse } from '@nestjs/swagger';
+import { ApiNotFoundResponse, ApiParam, ApiResponse } from '@nestjs/swagger';
 
 @Controller('events')
 export class EventsController {
@@ -30,6 +30,11 @@ export class EventsController {
   }
 
   @Get(':id')
+  @ApiParam({
+    name: 'id',
+    schema: { type: 'number', description: 'event id' },
+    required: true,
+  })
   @ApiResponse({
     status: 200,
     description: 'a event of partner',

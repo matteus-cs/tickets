@@ -2,7 +2,6 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
-  UnauthorizedException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { CreateTicketDto } from './dto/create-ticket.dto';
@@ -32,7 +31,7 @@ export class TicketsService {
     const partner = await this.partnersRepository.findByUserId(userId);
 
     if (!partner) {
-      throw new UnauthorizedException();
+      throw new ForbiddenException();
     }
     const tickets = createTicketDto.reduce<Ticket[]>((acc, ticket) => {
       if (ticket.quantity) {
