@@ -7,6 +7,7 @@ import {
   Get,
   Param,
   Query,
+  ForbiddenException,
 } from '@nestjs/common';
 import { TicketsService } from './tickets.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
@@ -19,10 +20,14 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { TicketStatusEnum } from './entities/ticket.entity';
+import { CustomerRepository } from '@/repositories/customer.repository';
 
 @Controller('events/:eventId/tickets')
 export class TicketsController {
-  constructor(private readonly ticketsService: TicketsService) {}
+  constructor(
+    private readonly ticketsService: TicketsService,
+    private readonly customerRepository: CustomerRepository,
+  ) {}
 
   @UseGuards(AuthGuard)
   @Post()
@@ -51,5 +56,34 @@ export class TicketsController {
     @Query('status') status: TicketStatusEnum,
   ) {
     return this.ticketsService.findByEventId(eventId, page || 1, status);
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('/ticket-hash')
+  @ApiQuery({
+    name: 'ticketId',
+    schema: { type: 'number' },
+    required: true,
+  })
+  @ApiQuery({
+    name: 'purchaseId',
+    schema: { type: 'number' },
+    required: true,
+  })
+  async createTicketHash(@Request() req) {
+    const { ticketId, purchaseId } = req.query;
+
+    const customer = await this.customerRepository.findByUser({
+      id: +req.user.sub,
+    });
+    if (!customer) {
+      throw new ForbiddenException();
+    }
+
+    return await this.ticketsService.createTicketHash(
+      +ticketId,
+      +purchaseId,
+      customer.id,
+    );
   }
 }

@@ -18,7 +18,7 @@ async function bootstrap() {
   app.use(json());
 
   const configService = app.get(ConfigService);
-  const port = configService.get<number>('PORT') || 3000;
+  const port = configService.get<number>('PORT') || 3001;
 
   const config = new DocumentBuilder()
     .setTitle('API manage tickets')

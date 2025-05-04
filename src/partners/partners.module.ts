@@ -8,11 +8,13 @@ import { Event } from '@/events/entities/event.entity';
 import { EventsModule } from '@/events/events.module';
 import { PartnerRepository } from '@/repositories/partner.repository';
 import { PartnerRepositoryAdapter } from './partner.repository.adapter';
+import { TicketsModule } from '@/tickets/tickets.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Partner, User, Event]),
     forwardRef(() => EventsModule),
+    forwardRef(() => TicketsModule),
   ],
   controllers: [PartnersController],
   providers: [

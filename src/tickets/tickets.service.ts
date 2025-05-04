@@ -1,8 +1,17 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { TicketRepository } from '@/repositories/ticket.repository';
 import { PartnerRepository } from '@/repositories/partner.repository';
 import { Ticket, TicketStatusEnum } from './entities/ticket.entity';
+import { PurchaseStatusEnum } from '@/purchases/entities/purchase.entity';
+import { Cryptography } from './utils/cryptography';
+import { CustomerRepository } from '@/repositories/customer.repository';
 
 @Injectable()
 export class TicketsService {
@@ -10,6 +19,10 @@ export class TicketsService {
     private ticketsRepository: TicketRepository,
 
     private partnersRepository: PartnerRepository,
+
+    private customerRepository: CustomerRepository,
+
+    private cryptography: Cryptography,
   ) {}
   async create(
     createTicketDto: CreateTicketDto[],
@@ -60,5 +73,65 @@ export class TicketsService {
       skip,
       status,
     );
+  }
+
+  async createTicketHash(
+    ticketId: number,
+    purchaseId: number,
+    customerId: number,
+  ) {
+    const ticket = await this.ticketsRepository.findById(ticketId, purchaseId, {
+      event: true,
+      purchases: true,
+    });
+    if (!ticket) {
+      throw new NotFoundException('Ticket not found');
+    }
+
+    const purchase = ticket.purchases[0];
+
+    if (!purchase || purchase.id !== purchaseId) {
+      throw new NotFoundException('Purchase not found');
+    }
+
+    const customer = await this.customerRepository.findById(customerId, false);
+
+    if (!customer || (customer && customer.id !== customerId)) {
+      throw new ForbiddenException();
+    }
+
+    if (
+      ticket.status !== TicketStatusEnum.SOLD ||
+      purchase.status !== PurchaseStatusEnum.PAID
+    ) {
+      throw new UnprocessableEntityException();
+    }
+
+    const hash = this.cryptography.encrypt(`${ticketId}:${ticket.event.id}`);
+
+    return { hash };
+  }
+
+  // validate if ticket is from current event
+  async validate(partnerId: number, eventId: number, hash: string) {
+    const decrypted = this.cryptography.decrypt(hash);
+    const [ticketId, ticketHashEventId] = decrypted.split(':');
+
+    const ticket = await this.ticketsRepository.findById(+ticketId, null, {
+      event: { partner: true },
+      purchases: false,
+    });
+
+    if (ticket) {
+      if (ticket.event.partner.id !== partnerId) throw new ForbiddenException();
+
+      const isValid =
+        +ticketHashEventId === eventId &&
+        ticket.status === TicketStatusEnum.SOLD;
+
+      return isValid;
+    } else {
+      return false;
+    }
   }
 }

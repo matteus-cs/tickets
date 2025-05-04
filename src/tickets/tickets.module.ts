@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TicketsService } from './tickets.service';
 import { TicketsController } from './tickets.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -8,14 +8,21 @@ import { Event } from 'src/events/entities/event.entity';
 import { TicketRepository } from '@/repositories/ticket.repository';
 import { TicketRepositoryAdapter } from './repositories/ticket.repository.adapter';
 import { PartnersModule } from '@/partners/partners.module';
+import { Cryptography } from './utils/cryptography';
+import { CustomersModule } from '@/customers/customers.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Ticket, Partner, Event]), PartnersModule],
+  imports: [
+    TypeOrmModule.forFeature([Ticket, Partner, Event]),
+    forwardRef(() => PartnersModule),
+    forwardRef(() => CustomersModule),
+  ],
   controllers: [TicketsController],
   providers: [
     TicketsService,
     { provide: TicketRepository, useClass: TicketRepositoryAdapter },
+    Cryptography,
   ],
-  exports: [TicketRepository],
+  exports: [TicketRepository, TicketsService],
 })
 export class TicketsModule {}

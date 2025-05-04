@@ -16,15 +16,19 @@ import { payloadType } from '@/auth/auth.service';
 import {
   ApiBearerAuth,
   ApiNotFoundResponse,
+  ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { TicketsService } from '@/tickets/tickets.service';
 
 @Controller('partners')
 export class PartnersController {
   constructor(
     private readonly partnersService: PartnersService,
     private readonly eventsService: EventsService,
+    private readonly ticketService: TicketsService,
   ) {}
 
   @Post()
@@ -96,6 +100,11 @@ export class PartnersController {
   @UseGuards(AuthGuard)
   @Get('events/:id')
   @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    schema: { type: 'number', description: 'event id' },
+    required: true,
+  })
   @ApiResponse({
     status: 200,
     description: 'a event of partner',
@@ -119,5 +128,43 @@ export class PartnersController {
       throw new UnauthorizedException();
     }
     return this.eventsService.findById(+req.params.id, partner.id);
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('events/:id/ticket/validate')
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    schema: { type: 'number', description: 'event id' },
+    required: true,
+  })
+  @ApiQuery({
+    name: 'hash',
+    schema: { type: 'string', description: 'ticket hash' },
+    required: true,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'verify if ticket is valid',
+    schema: {
+      properties: {
+        isValid: { type: 'bool' },
+      },
+    },
+  })
+  async validateTicket(@Request() req) {
+    const partner = await this.partnersService.findByUserId(req.user.sub);
+    if (!partner) {
+      throw new UnauthorizedException();
+    }
+
+    const { id } = req.params;
+    const { hash } = req.query;
+    const isValid = await this.ticketService.validate(
+      +req.user.sub,
+      +id,
+      hash as string,
+    );
+    return { isValid };
   }
 }
