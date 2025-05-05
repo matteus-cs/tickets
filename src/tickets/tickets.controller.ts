@@ -2,7 +2,6 @@ import {
   Controller,
   Post,
   Body,
-  Request,
   UseGuards,
   Get,
   Param,
@@ -16,12 +15,18 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiForbiddenResponse,
-  ApiParam,
-  ApiQuery,
+  ApiOkResponse,
   ApiResponse,
+  ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
-import { TicketStatusEnum } from './entities/ticket.entity';
 import { CustomerRepository } from '@/repositories/customer.repository';
+import { ByEventIdDto } from '@/events/dto/request-event.dto';
+import {
+  CreateTicketHashQueryDto,
+  FindEventsQueryDto,
+} from './dto/request-tickets.dto';
+import { payloadType } from '@/auth/auth.service';
+import { User } from '@/decorators/user.decorator';
 
 @Controller('events/:eventId/tickets')
 export class TicketsController {
@@ -33,59 +38,65 @@ export class TicketsController {
   @UseGuards(AuthGuard)
   @Post()
   @ApiBearerAuth()
-  @ApiParam({ name: 'eventId', schema: { type: 'number' }, required: true })
   @ApiBody({ type: [CreateTicketDto] })
   @ApiResponse({ status: 201, description: 'Successfully created' })
   @ApiForbiddenResponse({ description: 'When a user is not a partner' })
-  create(@Body() createTicketDto: CreateTicketDto[], @Request() req) {
+  create(
+    @Body() createTicketDto: CreateTicketDto[],
+    @User() user: payloadType,
+    @Param() params: ByEventIdDto,
+  ) {
     return this.ticketsService.create(
       createTicketDto,
-      req.params.eventId,
-      +req.user.sub,
+      params.eventId,
+      user.sub,
     );
   }
 
   @Get()
-  @ApiQuery({ name: 'eventId', schema: { type: 'number' }, required: true })
-  @ApiQuery({ name: 'page', schema: { type: 'number' }, required: false })
-  @ApiQuery({
-    name: 'status',
-    schema: { type: 'string', enum: ['available', 'sold'] },
-    required: false,
-  })
   findEvents(
-    @Param('eventId') eventId: number,
-    @Query('page') page: number,
-    @Query('status') status: TicketStatusEnum,
+    @Param() params: ByEventIdDto,
+    @Query() query: FindEventsQueryDto,
   ) {
-    return this.ticketsService.findByEventId(eventId, page || 1, status);
+    const { page, status } = query;
+    return this.ticketsService.findByEventId(params.eventId, page, status);
   }
 
   @UseGuards(AuthGuard)
   @Get('/hash')
-  @ApiQuery({
-    name: 'ticketId',
-    schema: { type: 'number' },
-    required: true,
+  @ApiBearerAuth()
+  @ApiOkResponse({
+    schema: { properties: { hash: { type: 'string' } } },
+    description: 'hash for event validation',
   })
-  @ApiQuery({
-    name: 'purchaseId',
-    schema: { type: 'number' },
-    required: true,
+  @ApiForbiddenResponse({
+    schema: {
+      properties: { statusCode: { type: 'number', example: 403 } },
+    },
+    description: 'is not the owner of the ticket',
   })
-  async createTicketHash(@Request() req) {
-    const { ticketId, purchaseId } = req.query;
+  @ApiUnprocessableEntityResponse({
+    schema: {
+      properties: { statusCode: { type: 'number', example: 422 } },
+    },
+    description: 'when ticket not sold or payment not made',
+  })
+  async createTicketHash(
+    @User() user: payloadType,
+    @Query() query: CreateTicketHashQueryDto,
+  ) {
+    const { ticketId, purchaseId } = query;
 
     const customer = await this.customerRepository.findByUser({
-      id: +req.user.sub,
+      id: user.sub,
     });
     if (!customer) {
       throw new ForbiddenException();
     }
 
     return await this.ticketsService.createTicketHash(
-      +ticketId,
-      +purchaseId,
+      ticketId,
+      purchaseId,
       customer.id,
     );
   }

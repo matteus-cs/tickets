@@ -61,8 +61,11 @@ export class PurchasesController {
       },
     },
   })
-  async create(@Body() createPurchaseDto: CreatePurchaseDto, @Req() req) {
-    const customer = await this.customerService.findByUserId(req.user.sub);
+  async create(
+    @Body() createPurchaseDto: CreatePurchaseDto,
+    @Req() req: Request,
+  ) {
+    const customer = await this.customerService.findByUserId(req.user!.sub);
     if (!customer) {
       throw new UnauthorizedException('User needs be a customer');
     }

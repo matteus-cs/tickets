@@ -1,6 +1,7 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { EventsService } from './events.service';
-import { ApiNotFoundResponse, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { ApiNotFoundResponse, ApiResponse } from '@nestjs/swagger';
+import { ByEventIdDto } from './dto/request-event.dto';
 
 @Controller('events')
 export class EventsController {
@@ -29,12 +30,7 @@ export class EventsController {
     return this.eventsService.findAll();
   }
 
-  @Get(':id')
-  @ApiParam({
-    name: 'id',
-    schema: { type: 'number', description: 'event id' },
-    required: true,
-  })
+  @Get(':eventId')
   @ApiResponse({
     status: 200,
     description: 'a event of partner',
@@ -51,7 +47,7 @@ export class EventsController {
     },
   })
   @ApiNotFoundResponse({ description: 'When event not found by passed id' })
-  findById(@Param('id') id: string) {
-    return this.eventsService.findById(+id);
+  findById(@Param() params: ByEventIdDto) {
+    return this.eventsService.findById(params.eventId);
   }
 }

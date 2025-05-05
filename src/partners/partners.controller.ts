@@ -2,10 +2,12 @@ import {
   Controller,
   Post,
   Body,
-  Request,
   UseGuards,
   Get,
   UnauthorizedException,
+  Req,
+  Param,
+  Query,
 } from '@nestjs/common';
 import { PartnersService } from './partners.service';
 import { CreatePartnerDto } from './dto/create-partner.dto';
@@ -16,12 +18,14 @@ import { payloadType } from '@/auth/auth.service';
 import {
   ApiBearerAuth,
   ApiNotFoundResponse,
-  ApiParam,
-  ApiQuery,
   ApiResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { TicketsService } from '@/tickets/tickets.service';
+import { Request } from 'express';
+import { ByEventIdDto } from '@/events/dto/request-event.dto';
+import { User } from '@/decorators/user.decorator';
+import { ValidateTicketQueryDto } from './dto/request.partner.dto';
 
 @Controller('partners')
 export class PartnersController {
@@ -63,7 +67,7 @@ export class PartnersController {
   @ApiBearerAuth()
   @ApiResponse({ status: 201, description: 'Successfully created' })
   @ApiUnauthorizedResponse({ description: 'When a user is not a partner' })
-  createEvents(@Body() createEventDto: CreateEventDto, @Request() req) {
+  createEvents(@Body() createEventDto: CreateEventDto, @Req() req: Request) {
     return this.eventsService.create(createEventDto, req.user as payloadType);
   }
 
@@ -89,8 +93,8 @@ export class PartnersController {
     },
   })
   @ApiUnauthorizedResponse({ description: 'When a user is not a partner' })
-  async findEventAll(@Request() req) {
-    const partner = await this.partnersService.findByUserId(req.user.sub);
+  async findEventAll(@Req() req: Request) {
+    const partner = await this.partnersService.findByUserId(req.user!.sub);
     if (!partner) {
       throw new UnauthorizedException();
     }
@@ -98,13 +102,8 @@ export class PartnersController {
   }
 
   @UseGuards(AuthGuard)
-  @Get('events/:id')
+  @Get('events/:eventId')
   @ApiBearerAuth()
-  @ApiParam({
-    name: 'id',
-    schema: { type: 'number', description: 'event id' },
-    required: true,
-  })
   @ApiResponse({
     status: 200,
     description: 'a event of partner',
@@ -122,48 +121,44 @@ export class PartnersController {
   })
   @ApiUnauthorizedResponse({ description: 'When a user is not a partner' })
   @ApiNotFoundResponse({ description: 'When event not found by passed id' })
-  async findEventById(@Request() req) {
-    const partner = await this.partnersService.findByUserId(req.user.sub);
+  async findEventById(
+    @User() user: payloadType,
+    @Param() params: ByEventIdDto,
+  ) {
+    const partner = await this.partnersService.findByUserId(user.sub);
     if (!partner) {
       throw new UnauthorizedException();
     }
-    return this.eventsService.findById(+req.params.id, partner.id);
+
+    return this.eventsService.findById(params.eventId, partner.id);
   }
 
   @UseGuards(AuthGuard)
-  @Get('events/:id/ticket/validate')
+  @Get('events/:eventId/ticket/validate')
   @ApiBearerAuth()
-  @ApiParam({
-    name: 'id',
-    schema: { type: 'number', description: 'event id' },
-    required: true,
-  })
-  @ApiQuery({
-    name: 'hash',
-    schema: { type: 'string', description: 'ticket hash' },
-    required: true,
-  })
   @ApiResponse({
     status: 200,
     description: 'verify if ticket is valid',
     schema: {
       properties: {
-        isValid: { type: 'bool' },
+        isValid: { type: 'boolean' },
       },
     },
   })
-  async validateTicket(@Request() req) {
-    const partner = await this.partnersService.findByUserId(req.user.sub);
+  async validateTicket(
+    @User() user: payloadType,
+    @Param() params: ByEventIdDto,
+    @Query() query: ValidateTicketQueryDto,
+  ) {
+    const partner = await this.partnersService.findByUserId(user.sub);
     if (!partner) {
       throw new UnauthorizedException();
     }
 
-    const { id } = req.params;
-    const { hash } = req.query;
     const isValid = await this.ticketService.validate(
-      +req.user.sub,
-      +id,
-      hash as string,
+      partner.id,
+      params.eventId,
+      query.hash,
     );
     return { isValid };
   }

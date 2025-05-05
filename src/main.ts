@@ -7,11 +7,11 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.enableCors();
+  app.enableCors({ origin: '*' });
   app.useGlobalPipes(new ValidationPipe());
 
   app.use(
-    '/purchases/confirmed-payment/webhook',
+    '/purchases/confirm-payment/webhook',
     raw({ type: 'application/json' }),
   );
 

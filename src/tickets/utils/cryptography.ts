@@ -6,22 +6,15 @@ import * as crypto from 'node:crypto';
 export class Cryptography {
   private readonly algorithm: string = 'aes-256-cbc';
   private readonly secretKey: string;
-  private iv: Buffer;
   constructor(configService: ConfigService) {
     this.secretKey = configService.get<string>(
       'SECRET_KEY_TICKET_HASH',
     ) as string;
-
-    this.iv = crypto.randomBytes(16);
   }
 
   encrypt(text: string): string {
     const iv = crypto.randomBytes(16);
-    const cipher = crypto.createCipheriv(
-      this.algorithm,
-      this.secretKey,
-      this.iv,
-    );
+    const cipher = crypto.createCipheriv(this.algorithm, this.secretKey, iv);
     const encrypted = Buffer.concat([cipher.update(text), cipher.final()]);
     return iv.toString('hex') + ':' + encrypted.toString('hex');
   }
