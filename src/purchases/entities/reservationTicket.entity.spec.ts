@@ -5,7 +5,10 @@ import {
 
 describe('ReservationTicket Entity', () => {
   it('should be able create an instance reservationTicket', () => {
-    const reservationTicket = ReservationTicket.create({ ticket: { id: 1 } });
+    const reservationTicket = ReservationTicket.create({
+      ticket: { id: 1 },
+      expiresAt: new Date(),
+    });
 
     expect(reservationTicket).toBeInstanceOf(ReservationTicket);
     expect(ReservationTicketStatusEnum.RESERVED).toBe(

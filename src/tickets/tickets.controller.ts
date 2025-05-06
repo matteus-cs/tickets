@@ -59,7 +59,7 @@ export class TicketsController {
     @Query() query: FindEventsQueryDto,
   ) {
     const { page, status } = query;
-    return this.ticketsService.findByEventId(params.eventId, page, status);
+    return this.ticketsService.findByEventId(params.eventId, page || 1, status);
   }
 
   @UseGuards(AuthGuard)

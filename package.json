@@ -76,17 +76,23 @@
       "ts"
     ],
     "rootDir": "src",
-    "testRegex": ".*\\.service\\.spec\\.ts$",
+    "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)sx?$": "@swc/jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "**/*.(t|j)s",
+      "!**/*.controller.ts"
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",
     "moduleNameMapper": {
       "@/(.*)": "<rootDir>/$1"
-    }
+    },
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      ".*\\.controller\\.spec\\.ts$"
+
+    ]
   }
 }

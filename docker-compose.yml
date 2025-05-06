@@ -8,7 +8,7 @@ services:
       - DB_PORT=3306
     container_name: container_app
     ports:
-      - 3000:3000
+      - ${PORT}:${PORT}
     depends_on: [mysql]
   mysql:
     image: mysql:8.0.30-debian
