@@ -16,11 +16,19 @@ import {
   ApiOkResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @UseGuards(ThrottlerGuard)
+  @Throttle({
+    default: {
+      ttl: 60000,
+      limit: 3,
+    },
+  })
   @HttpCode(HttpStatus.OK)
   @Post('login')
   @ApiOkResponse({

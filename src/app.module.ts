@@ -19,6 +19,7 @@ import { ReservationTicket } from './purchases/entities/reservationTicket.entity
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { StripeModule } from './stripe/stripe.module';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -49,6 +50,14 @@ import { StripeModule } from './stripe/stripe.module';
       }),
     }),
     ScheduleModule.forRoot(),
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 60000,
+          limit: 10,
+        },
+      ],
+    }),
     UsersModule,
     PartnersModule,
     CustomersModule,
