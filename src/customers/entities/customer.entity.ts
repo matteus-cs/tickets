@@ -1,5 +1,5 @@
 import { Purchase } from '@/purchases/entities/purchase.entity';
-import { ReservationTicket } from '@/purchases/entities/reservationTicket.entity';
+import { ReservationTicket } from '@/reservation/entities/reservationTicket.entity';
 import { User } from '@/users/entities/user.entity';
 import {
   Column,

@@ -1,4 +1,5 @@
 import {
+  FindWhere,
   ReservationTicketRepository,
   UpdateWhere,
   WhereDelete,
@@ -13,6 +14,7 @@ export class ReservationTicketRepositoryAdapter
 {
   private queryRunner?: QueryRunner | null;
   constructor(private dataSource: DataSource) {}
+
   async update(
     updateWhere: UpdateWhere,
     data: Partial<ReservationTicket>,
@@ -24,14 +26,14 @@ export class ReservationTicketRepositoryAdapter
       expiresAt: LessThan(expiresAt),
     });
   }
-  async findOneBy(ticketId: number): Promise<ReservationTicket | null> {
+
+  async findOneBy(findWhere: FindWhere): Promise<ReservationTicket | null> {
     const manager = this.queryRunner
       ? this.queryRunner.manager
       : this.dataSource.manager;
-    return await manager.findOneBy(ReservationTicket, {
-      ticket: { id: ticketId },
-    });
+    return await manager.findOneBy(ReservationTicket, findWhere);
   }
+
   async delete(whereDelete: WhereDelete): Promise<void> {
     const manager = this.queryRunner
       ? this.queryRunner.manager
