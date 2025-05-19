@@ -1,18 +1,16 @@
 import {
-  BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
-import { TicketStatusEnum } from '@/tickets/entities/ticket.entity';
 import { Purchase, PurchaseStatusEnum } from './entities/purchase.entity';
-import { ReservationTicket } from './entities/reservationTicket.entity';
 import { PurchaseRepository } from '@/repositories/purchase.repository';
 import { CustomerRepository } from '@/repositories/customer.repository';
-import { TicketRepository } from '@/repositories/ticket.repository';
 import { ReservationTicketRepository } from '@/repositories/reservationTicket.repository';
-import { ConfigService } from '@nestjs/config';
 import { BasePaymentService } from '@/payment/basePayment.service';
+import { TicketStatusEnum } from '@/tickets/entities/ticket.entity';
+import { TicketRepository } from '@/repositories/ticket.repository';
 
 @Injectable()
 export class PurchasesService {
@@ -26,31 +24,27 @@ export class PurchasesService {
     private reservationTicketRepository: ReservationTicketRepository,
 
     private paymentService: BasePaymentService,
-
-    private configService: ConfigService,
   ) {}
   async create(createPurchaseDto: CreatePurchaseDto, customerId: number) {
-    const { ticketIds } = createPurchaseDto;
+    const { reservationIds } = createPurchaseDto;
     const customer = await this.customerRepository.findById(customerId, true);
     if (!customer) {
       throw new NotFoundException('customer not found');
     }
 
-    const findAllTicketPromises = ticketIds.map((id) =>
-      this.ticketRepository.findById(id),
-    );
+    const reservationsTickets = (
+      await Promise.all(
+        reservationIds.map((id) =>
+          this.reservationTicketRepository.findOneBy({ id }),
+        ),
+      )
+    ).filter((r) => r !== null);
 
-    const tickets = (await Promise.all(findAllTicketPromises)).filter(
-      (t) => t !== null,
-    );
-
-    if (tickets.length !== ticketIds.length) {
-      throw new NotFoundException('Some tickets not found');
-    }
-    if (
-      tickets.some((ticket) => ticket.status !== TicketStatusEnum.AVAILABLE)
-    ) {
-      throw new BadRequestException('Some tickets are not available');
+    const tickets = reservationsTickets
+      .filter((r) => r.customer.id === customerId)
+      .map((r) => r.ticket);
+    if (tickets.length < reservationIds.length) {
+      throw new ForbiddenException();
     }
 
     const amount = tickets.reduce((acc, t) => {
@@ -67,32 +61,16 @@ export class PurchasesService {
     });
     const { id: purchaseId } = await this.purchaseRepository.save(purchase);
 
-    const { clientSecret } = await this.paymentService.processPayment({
-      amount: Math.round((amount as number) * 100),
-      metadata: {
-        customerId: customer.id,
-        purchaseId: purchaseId,
-        ticketIds,
-      },
-    });
-
     try {
-      await this.reservationTicketRepository.startTransaction();
-      const now = new Date();
-      const expiresAt = new Date(now.getTime() + 15 * 60000);
-      const reservations = tickets.map((t) => {
-        const reservation = ReservationTicket.create({
-          reservationDate: now,
-          expiresAt,
-          customer,
-          ticket: t,
-        });
-        return reservation;
+      const ticketIds = tickets.map((t) => t.id);
+      const { clientSecret } = await this.paymentService.processPayment({
+        amount: Math.round((amount as number) * 100),
+        metadata: {
+          customerId: customer.id,
+          purchaseId: purchaseId,
+          ticketIds,
+        },
       });
-      await this.reservationTicketRepository.save(reservations);
-      await this.reservationTicketRepository.commitTransaction();
-      await this.reservationTicketRepository.release();
-
       await Promise.all(
         tickets.map((t) => {
           return this.ticketRepository.update(t.id, {
@@ -100,15 +78,14 @@ export class PurchasesService {
           });
         }),
       );
+      return { clientSecret };
     } catch (error) {
-      await this.reservationTicketRepository.rollbackTransaction();
       await this.purchaseRepository.update(
         { id: purchaseId },
         { status: PurchaseStatusEnum.ERROR },
       );
       throw error;
     }
-    return { clientSecret };
   }
 
   async confirmPayment(payload: any, signature: string) {

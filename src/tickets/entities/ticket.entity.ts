@@ -1,6 +1,6 @@
 import { Event } from '@/events/entities/event.entity';
 import { Purchase } from '@/purchases/entities/purchase.entity';
-import { ReservationTicket } from '@/purchases/entities/reservationTicket.entity';
+import { ReservationTicket } from '@/reservation/entities/reservationTicket.entity';
 import {
   Column,
   Entity,
@@ -14,6 +14,7 @@ import {
 export enum TicketStatusEnum {
   AVAILABLE = 'available',
   SOLD = 'sold',
+  RESERVED = 'reserved',
 }
 
 export type TicketProps = {

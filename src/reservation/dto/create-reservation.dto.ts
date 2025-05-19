@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsNotEmpty } from 'class-validator';
 
-export class CreatePurchaseDto {
+export class CreateReservationDto {
   @ApiProperty({
     type: [Number],
     example: [1, 2, 3],
   })
   @IsArray()
   @IsNotEmpty()
-  reservationIds: number[];
+  ticketIds: number[];
 }

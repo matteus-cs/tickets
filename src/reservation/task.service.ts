@@ -4,7 +4,6 @@ import { ReservationTicketRepository } from '../repositories/reservationTicket.r
 import { TicketRepository } from '../repositories/ticket.repository';
 import { PurchaseRepository } from '../repositories/purchase.repository';
 import { TicketStatusEnum } from '../tickets/entities/ticket.entity';
-import { PurchaseStatusEnum } from './entities/purchase.entity';
 
 @Injectable()
 export class TasksService {
@@ -26,13 +25,6 @@ export class TasksService {
       });
 
       await this.reservationTicketRepository.delete({ id: reservation.id });
-
-      await this.purchaseRepository.update(
-        {
-          tickets: { id: reservation.ticket.id },
-        },
-        { status: PurchaseStatusEnum.ERROR },
-      );
     }
   }
 }

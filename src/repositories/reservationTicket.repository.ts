@@ -1,7 +1,9 @@
-import { ReservationTicket } from '@/purchases/entities/reservationTicket.entity';
+import { ReservationTicket } from '@/reservation/entities/reservationTicket.entity';
 
 export type WhereDelete = { id: number } | { ticket: { id: number } };
-export type FindWhere = { id: number } | { ticket: { id: number } };
+export type FindWhere =
+  | { id: number; ticket?: { id: number } }
+  | { id?: number; ticket: { id: number } };
 
 export type UpdateWhere =
   | { id: number; ticket?: never }
@@ -22,6 +24,6 @@ export abstract class ReservationTicketRepository {
     updateWhere: UpdateWhere,
     data: Partial<ReservationTicket>,
   ): Promise<void>;
-  abstract findOneBy(ticketId: number): Promise<ReservationTicket | null>;
+  abstract findOneBy(findWhere: FindWhere): Promise<ReservationTicket | null>;
   abstract findExpired(expiresAt: Date): Promise<ReservationTicket[]>;
 }

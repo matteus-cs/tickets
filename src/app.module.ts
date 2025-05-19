@@ -15,11 +15,12 @@ import { TicketsModule } from './tickets/tickets.module';
 import { Ticket } from './tickets/entities/ticket.entity';
 import { PurchasesModule } from './purchases/purchases.module';
 import { Purchase } from './purchases/entities/purchase.entity';
-import { ReservationTicket } from './purchases/entities/reservationTicket.entity';
+import { ReservationTicket } from './reservation/entities/reservationTicket.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { StripeModule } from './stripe/stripe.module';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { ReservationModule } from './reservation/reservation.module';
 
 @Module({
   imports: [
@@ -66,6 +67,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
     TicketsModule,
     PurchasesModule,
     StripeModule,
+    ReservationModule,
   ],
   controllers: [AppController],
   providers: [AppService],
