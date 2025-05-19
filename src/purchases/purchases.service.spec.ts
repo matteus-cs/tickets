@@ -1,25 +1,22 @@
-import { InMemoryTicketRepository } from '../../test/repositories/inMemory.ticket.repository';
 import { PurchasesService } from './purchases.service';
 import { InMemoryCustomerRepository } from '../../test/repositories/inMemoryCustomer.repository';
-import { InMemoryPurchaseRepository } from '../../test/repositories/inMemoryPurchase.repostory';
+import { InMemoryPurchaseRepository } from '../../test/repositories/inMemoryPurchase.repository';
 import { InMemoryReservationTicketRepository } from '../../test/repositories/inMemoryReservationTicket.repository';
 import { BasePaymentService } from '@/payment/basePayment.service';
 import { Ticket } from '@/tickets/entities/ticket.entity';
 import { Customer } from '@/customers/entities/customer.entity';
 import { PurchaseStatusEnum } from './entities/purchase.entity';
-import { ReservationTicketStatusEnum } from './entities/reservationTicket.entity';
+import { ReservationTicket } from '@/reservation/entities/reservationTicket.entity';
 import { User } from '@/users/entities/user.entity';
 import { ImpPaymentService } from '../../test/adapters/ImpPayment.service';
-import {
-  BadRequestException,
-  UnprocessableEntityException,
-} from '@nestjs/common';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PurchaseRepository } from '@/repositories/purchase.repository';
 import { ReservationTicketRepository } from '@/repositories/reservationTicket.repository';
-import { TicketRepository } from '@/repositories/ticket.repository';
 import { CustomerRepository } from '@/repositories/customer.repository';
 import { ConfigModule } from '@nestjs/config';
+import { InMemoryTicketRepository } from '../../test/repositories/inMemory.ticket.repository';
+import { TicketRepository } from '@/repositories/ticket.repository';
 
 describe('PurchasesService', () => {
   let service: PurchasesService;
@@ -33,8 +30,8 @@ describe('PurchasesService', () => {
   let user: User;
 
   beforeEach(async () => {
-    ticketRepository = new InMemoryTicketRepository();
     customerRepository = new InMemoryCustomerRepository();
+    ticketRepository = new InMemoryTicketRepository();
     purchaseRepository = new InMemoryPurchaseRepository();
     reservationTicketRepository = new InMemoryReservationTicketRepository();
 
@@ -47,12 +44,12 @@ describe('PurchasesService', () => {
           useValue: purchaseRepository,
         },
         {
-          provide: ReservationTicketRepository,
-          useValue: reservationTicketRepository,
-        },
-        {
           provide: TicketRepository,
           useValue: ticketRepository,
+        },
+        {
+          provide: ReservationTicketRepository,
+          useValue: reservationTicketRepository,
         },
         {
           provide: CustomerRepository,
@@ -66,13 +63,6 @@ describe('PurchasesService', () => {
     }).compile();
 
     service = module.get<PurchasesService>(PurchasesService);
-    /* service = new PurchasesService(
-      customerRepository,
-      ticketRepository,
-      purchaseRepository,
-      reservationTicketRepository,
-      paymentService,
-    ); */
 
     const date = new Date();
     user = User.create({
@@ -90,17 +80,34 @@ describe('PurchasesService', () => {
       user,
     });
     await customerRepository.save(customer);
+
     ticket = Ticket.create({ location: 'vip', price: 40.0 });
-    await ticketRepository.save([
-      ticket,
-      Ticket.create({ location: 'north', price: 20.0 }),
+    const ticket2 = Ticket.create({ location: 'north', price: 20.0 });
+
+    await ticketRepository.save([ticket, ticket2]);
+
+    const expiresAt = new Date();
+    expiresAt.setMinutes(expiresAt.getMinutes() + 15);
+    await reservationTicketRepository.save([
+      ReservationTicket.create({
+        id: 1,
+        customer,
+        ticket,
+        expiresAt,
+      }),
+      ReservationTicket.create({
+        id: 2,
+        customer,
+        ticket: ticket2,
+        expiresAt,
+      }),
     ]);
   });
 
   it('should be able create an purchase', async () => {
     await service.create(
       {
-        ticketIds: [1],
+        reservationIds: [1],
       },
       customer.id,
     );
@@ -109,10 +116,6 @@ describe('PurchasesService', () => {
     expect(purchaseRepository.purchases[0].status).toBe(
       PurchaseStatusEnum.PENDING,
     );
-    expect(reservationTicketRepository.reservationTicket).toHaveLength(1);
-    expect(reservationTicketRepository.reservationTicket[0].status).toBe(
-      ReservationTicketStatusEnum.RESERVED,
-    );
     expect(ticket.status).toBe('sold');
   });
 
@@ -120,53 +123,29 @@ describe('PurchasesService', () => {
     await expect(() =>
       service.create(
         {
-          ticketIds: [1],
+          reservationIds: [1],
         },
         2,
       ),
     ).rejects.toThrow(new BadRequestException('customer not found'));
   });
-  it('should return an error if a ticket is not found', async () => {
-    await expect(() =>
-      service.create(
-        {
-          ticketIds: [1, 10],
-        },
-        customer.id,
-      ),
-    ).rejects.toThrow(new BadRequestException('Some tickets not found'));
-  });
-  it('should return an error if the ticket with the given ID is not available', async () => {
-    await service.create(
-      {
-        ticketIds: [1],
-      },
-      customer.id,
-    );
-    await expect(() =>
-      service.create(
-        {
-          ticketIds: [1],
-        },
-        customer.id,
-      ),
-    ).rejects.toThrow(
-      new BadRequestException('Some tickets are not available'),
-    );
-  });
-  it('should return an error if the ticket is already booked', async () => {
-    jest.spyOn(reservationTicketRepository, 'save').mockImplementation(() => {
-      throw new UnprocessableEntityException();
+
+  it('should throw a forbidden error if the ticket is not associated with a client', async () => {
+    const customer = Customer.create({
+      address: 'in test',
+      phone: '99 99999-9999',
+      createdAt: new Date(),
     });
+    await customerRepository.save(customer);
+
     await expect(() =>
       service.create(
         {
-          ticketIds: [1],
+          reservationIds: [1],
         },
         customer.id,
       ),
-    ).rejects.toThrow(new UnprocessableEntityException());
-    expect(purchaseRepository.purchases[0].status).toBe('error');
+    ).rejects.toThrow(new ForbiddenException());
   });
 
   it('should be defined', () => {

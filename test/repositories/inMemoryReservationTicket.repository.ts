@@ -1,10 +1,12 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/require-await */
 import {
+  FindWhere,
   ReservationTicketRepository,
   UpdateWhere,
   WhereDelete,
 } from '@/repositories/reservationTicket.repository';
-import { ReservationTicket } from '@/purchases/entities/reservationTicket.entity';
+import { ReservationTicket } from '@/reservation/entities/reservationTicket.entity';
 import { UnprocessableEntityException } from '@nestjs/common';
 
 export class InMemoryReservationTicketRepository
@@ -15,16 +17,26 @@ export class InMemoryReservationTicketRepository
   async commitTransaction(): Promise<void> {}
   async rollbackTransaction(): Promise<void> {}
   async release(): Promise<void> {}
+
   delete(whereDelete: WhereDelete): Promise<void> {
     throw new Error('Method not implemented.');
   }
+
+  async findOneBy(findWhere: FindWhere): Promise<ReservationTicket | null> {
+    const reservation = this.reservationTicket.find((r) => {
+      if (findWhere.id && findWhere.id === r.id) {
+        return r;
+      }
+      return r.ticket.id === findWhere.ticket?.id;
+    });
+
+    return reservation ?? null;
+  }
+
   update(
     updateWhere: UpdateWhere,
     data: Partial<ReservationTicket>,
   ): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  findOneBy(ticketId: number): Promise<ReservationTicket | null> {
     throw new Error('Method not implemented.');
   }
   findExpired(expiresAt: Date): Promise<ReservationTicket[]> {
@@ -39,6 +51,7 @@ export class InMemoryReservationTicketRepository
         if (ids.includes(r.id)) {
           throw new UnprocessableEntityException('ticket no longer available');
         }
+        r.id = ids.length + 1;
       }
       this.reservationTicket.push(...reservationTicket);
       return;
@@ -46,6 +59,7 @@ export class InMemoryReservationTicketRepository
     if (ids.includes(reservationTicket.id)) {
       throw new UnprocessableEntityException('ticket no longer available');
     }
+    reservationTicket.id = ids.length + 1;
     this.reservationTicket.push(reservationTicket);
   }
 }
