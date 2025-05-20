@@ -11,6 +11,7 @@ import { ReservationTicketRepository } from '@/repositories/reservationTicket.re
 import { BasePaymentService } from '@/payment/basePayment.service';
 import { TicketStatusEnum } from '@/tickets/entities/ticket.entity';
 import { TicketRepository } from '@/repositories/ticket.repository';
+import { ReservationTicket } from '@/reservation/entities/reservationTicket.entity';
 
 @Injectable()
 export class PurchasesService {
@@ -38,8 +39,13 @@ export class PurchasesService {
           this.reservationTicketRepository.findOneBy({ id }),
         ),
       )
-    ).filter((r) => r !== null);
+    )
+      .filter((r): r is ReservationTicket => r !== null)
+      .filter((r) => r.expiresAt.getTime() >= Date.now());
 
+    if (reservationsTickets.length < reservationIds.length) {
+      throw new NotFoundException('Some ticket reservations not found');
+    }
     const tickets = reservationsTickets
       .filter((r) => r.customer.id === customerId)
       .map((r) => r.ticket);
