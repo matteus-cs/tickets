@@ -9,7 +9,11 @@ import { PurchaseStatusEnum } from './entities/purchase.entity';
 import { ReservationTicket } from '@/reservation/entities/reservationTicket.entity';
 import { User } from '@/users/entities/user.entity';
 import { ImpPaymentService } from '../../test/adapters/ImpPayment.service';
-import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PurchaseRepository } from '@/repositories/purchase.repository';
 import { ReservationTicketRepository } from '@/repositories/reservationTicket.repository';
@@ -146,6 +150,25 @@ describe('PurchasesService', () => {
         customer.id,
       ),
     ).rejects.toThrow(new ForbiddenException());
+  });
+
+  it('should  be able to throw an error not found if a ticket reservation has expired', async () => {
+    const expiresAt = new Date();
+    expiresAt.setMinutes(expiresAt.getMinutes() - 15);
+    await reservationTicketRepository.save([
+      ReservationTicket.create({
+        id: 3,
+        customer,
+        ticket,
+        expiresAt,
+      }),
+    ]);
+
+    await expect(() =>
+      service.create({ reservationIds: [1, 2, 3] }, customer.id),
+    ).rejects.toThrow(
+      new NotFoundException('Some ticket reservations not found'),
+    );
   });
 
   it('should be defined', () => {
