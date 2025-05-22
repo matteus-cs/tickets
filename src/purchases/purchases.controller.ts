@@ -3,8 +3,8 @@ import {
   Post,
   Body,
   UseGuards,
-  UnauthorizedException,
   Req,
+  ForbiddenException,
 } from '@nestjs/common';
 import { PurchasesService } from './purchases.service';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
@@ -12,11 +12,12 @@ import { AuthGuard } from '@/auth/auth.guard';
 import { CustomersService } from '@/customers/customers.service';
 import { Request } from 'express';
 import {
-  ApiBadRequestResponse,
   ApiBearerAuth,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiNotFoundResponse,
 } from '@nestjs/swagger';
+import { ErrorCode } from '@/error-code';
 
 @Controller('purchases')
 export class PurchasesController {
@@ -34,29 +35,22 @@ export class PurchasesController {
   @ApiNotFoundResponse({
     schema: {
       properties: {
-        message: { type: 'string', example: 'Some tickets not found' },
-        error: {
+        code: { type: 'string', example: ErrorCode.RESERVATION_NOT_FOUND },
+        message: {
           type: 'string',
-          example: 'Not Found',
-        },
-        statusCode: {
-          type: 'string',
-          example: 404,
+          example: 'Some ticket reservations not found',
         },
       },
     },
   })
-  @ApiBadRequestResponse({
+  @ApiForbiddenResponse({
+    description:
+      "When a user is not a partner or some tickets don't belong to the customer",
     schema: {
       properties: {
-        message: { type: 'string', example: 'Some tickets are not available' },
-        error: {
+        code: {
           type: 'string',
-          example: 'Bad Request',
-        },
-        statusCode: {
-          type: 'string',
-          example: 400,
+          example: ErrorCode.AUTH_FORBIDDEN,
         },
       },
     },
@@ -67,7 +61,7 @@ export class PurchasesController {
   ) {
     const customer = await this.customerService.findByUserId(req.user!.sub);
     if (!customer) {
-      throw new UnauthorizedException('User needs be a customer');
+      throw new ForbiddenException({ code: ErrorCode.AUTH_FORBIDDEN });
     }
     return this.purchasesService.create(createPurchaseDto, customer.id);
   }

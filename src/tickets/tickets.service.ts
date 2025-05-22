@@ -11,6 +11,7 @@ import { Ticket, TicketStatusEnum } from './entities/ticket.entity';
 import { PurchaseStatusEnum } from '@/purchases/entities/purchase.entity';
 import { Cryptography } from './utils/cryptography';
 import { CustomerRepository } from '@/repositories/customer.repository';
+import { ErrorCode } from '@/error-code';
 
 @Injectable()
 export class TicketsService {
@@ -31,7 +32,7 @@ export class TicketsService {
     const partner = await this.partnersRepository.findByUserId(userId);
 
     if (!partner) {
-      throw new ForbiddenException();
+      throw new ForbiddenException({ code: ErrorCode.AUTH_FORBIDDEN });
     }
     const tickets = createTicketDto.reduce<Ticket[]>((acc, ticket) => {
       if (ticket.quantity) {
@@ -84,26 +85,28 @@ export class TicketsService {
       purchases: true,
     });
     if (!ticket) {
-      throw new NotFoundException('Ticket not found');
+      throw new NotFoundException({ code: ErrorCode.TICKET_NOT_FOUND });
     }
 
     const purchase = ticket.purchases[0];
 
     if (!purchase || purchase.id !== purchaseId) {
-      throw new NotFoundException('Purchase not found');
+      throw new NotFoundException({ code: ErrorCode.PURCHASE_NOT_FOUND });
     }
 
     const customer = await this.customerRepository.findById(customerId, false);
 
     if (!customer || (customer && customer.id !== customerId)) {
-      throw new ForbiddenException();
+      throw new ForbiddenException({ code: ErrorCode.AUTH_FORBIDDEN });
     }
 
     if (
       ticket.status !== TicketStatusEnum.SOLD ||
       purchase.status !== PurchaseStatusEnum.PAID
     ) {
-      throw new UnprocessableEntityException();
+      throw new UnprocessableEntityException({
+        code: ErrorCode.PURCHASE_INVALID_STATE,
+      });
     }
 
     const hash = this.cryptography.encrypt(`${ticketId}:${ticket.event.id}`);
@@ -122,7 +125,8 @@ export class TicketsService {
     });
 
     if (ticket) {
-      if (ticket.event.partner.id !== partnerId) throw new ForbiddenException();
+      if (ticket.event.partner.id !== partnerId)
+        throw new ForbiddenException({ code: ErrorCode.AUTH_FORBIDDEN });
 
       const isValid =
         +ticketHashEventId === eventId &&

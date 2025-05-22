@@ -3,6 +3,7 @@ import { CreatePartnerDto } from './dto/create-partner.dto';
 import { User } from '@/users/entities/user.entity';
 import { PartnerRepository } from '@/repositories/partner.repository';
 import { Partner } from './entities/partner.entity';
+import { ErrorCode } from '@/error-code';
 
 @Injectable()
 export class PartnersService {
@@ -11,7 +12,10 @@ export class PartnersService {
     const { name, email, password, companyName } = createPartnerDto;
     const partnerAlreadyExists = await this.partnerRepository.findOneBy(email);
     if (partnerAlreadyExists) {
-      throw new BadRequestException('partner already exists');
+      throw new BadRequestException({
+        code: ErrorCode.PARTNER_ALREADY_EXIST,
+        message: 'partner already exists',
+      });
     }
     const createdAt = new Date();
     const user = User.create({

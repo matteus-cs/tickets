@@ -9,6 +9,7 @@ import { TicketStatusEnum } from '@/tickets/entities/ticket.entity';
 import { CustomerRepository } from '@/repositories/customer.repository';
 import { TicketRepository } from '@/repositories/ticket.repository';
 import { ReservationTicket } from './entities/reservationTicket.entity';
+import { ErrorCode } from '@/error-code';
 
 @Injectable()
 export class ReservationService {
@@ -22,7 +23,7 @@ export class ReservationService {
     const { ticketIds } = createReservationDto;
     const customer = await this.customerRepository.findById(customerId, true);
     if (!customer) {
-      throw new NotFoundException('customer not found');
+      throw new NotFoundException({ code: ErrorCode.CUSTOMER_NOT_FOUND });
     }
 
     const findAllTicketPromises = ticketIds.map((id) =>
@@ -34,12 +35,18 @@ export class ReservationService {
     );
 
     if (tickets.length !== ticketIds.length) {
-      throw new NotFoundException('Some tickets not found');
+      throw new NotFoundException({
+        code: ErrorCode.TICKET_NOT_FOUND,
+        message: 'Some tickets not found',
+      });
     }
     if (
       tickets.some((ticket) => ticket.status !== TicketStatusEnum.AVAILABLE)
     ) {
-      throw new BadRequestException('Some tickets are not available');
+      throw new BadRequestException({
+        code: ErrorCode.TICKET_NOT_AVAILABLE,
+        message: 'Some tickets are not available',
+      });
     }
 
     try {

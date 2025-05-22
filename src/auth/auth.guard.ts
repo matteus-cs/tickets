@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { jwtConstants } from './constants';
 import { Request } from 'express';
 import { payloadType } from './auth.service';
+import { ErrorCode } from '@/error-code';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -18,7 +19,9 @@ export class AuthGuard implements CanActivate {
 
     const token = this.extractTokenFromHeader(request);
     if (!token) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException({
+        code: ErrorCode.AUTH_TOKEN_NOT_PROVIDED,
+      });
     }
     try {
       const payload = await this.jwtService.verifyAsync<payloadType>(token, {
@@ -27,7 +30,7 @@ export class AuthGuard implements CanActivate {
 
       request['user'] = payload;
     } catch {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException({ code: ErrorCode.AUTH_TOKEN_EXPIRED });
     }
     return true;
   }

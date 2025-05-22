@@ -23,8 +23,11 @@ async function bootstrap() {
   const port = configService.get<number>('PORT') || 3001;
 
   const config = new DocumentBuilder()
-    .setTitle('API manage tickets')
-    .setDescription('The cats API description')
+    .setTitle('Event management API')
+    .setDescription(
+      `**REST** API for managing and selling event tickets, designed to serve both **partners** (event organizers) and **customers** (ticket buyers).\
+      The API allows partners to create and manage events and their tickets, while customers can view events, make purchases and manage their orders.`,
+    )
     .setVersion('0.0.1')
     .addTag('tickets')
     .addBearerAuth()

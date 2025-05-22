@@ -12,6 +12,7 @@ import { BasePaymentService } from '@/payment/basePayment.service';
 import { TicketStatusEnum } from '@/tickets/entities/ticket.entity';
 import { TicketRepository } from '@/repositories/ticket.repository';
 import { ReservationTicket } from '@/reservation/entities/reservationTicket.entity';
+import { ErrorCode } from '@/error-code';
 
 @Injectable()
 export class PurchasesService {
@@ -30,7 +31,7 @@ export class PurchasesService {
     const { reservationIds } = createPurchaseDto;
     const customer = await this.customerRepository.findById(customerId, true);
     if (!customer) {
-      throw new NotFoundException('customer not found');
+      throw new NotFoundException({ code: ErrorCode.CUSTOMER_NOT_FOUND });
     }
 
     const reservationsTickets = (
@@ -44,13 +45,16 @@ export class PurchasesService {
       .filter((r) => r.expiresAt.getTime() >= Date.now());
 
     if (reservationsTickets.length < reservationIds.length) {
-      throw new NotFoundException('Some ticket reservations not found');
+      throw new NotFoundException({
+        code: ErrorCode.RESERVATION_NOT_FOUND,
+        message: 'Some ticket reservations not found',
+      });
     }
     const tickets = reservationsTickets
       .filter((r) => r.customer.id === customerId)
       .map((r) => r.ticket);
     if (tickets.length < reservationIds.length) {
-      throw new ForbiddenException();
+      throw new ForbiddenException({ code: ErrorCode.AUTH_FORBIDDEN });
     }
 
     const amount = tickets.reduce((acc, t) => {

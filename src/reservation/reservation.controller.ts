@@ -1,9 +1,9 @@
 import {
   Body,
   Controller,
+  ForbiddenException,
   Post,
   Req,
-  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { ReservationService } from './reservation.service';
@@ -17,6 +17,7 @@ import { AuthGuard } from '@/auth/auth.guard';
 import { CustomersService } from '@/customers/customers.service';
 import { Request } from 'express';
 import { CreateReservationDto } from './dto/create-reservation.dto';
+import { ErrorCode } from '@/error-code';
 
 @Controller('reservation')
 export class ReservationController {
@@ -34,30 +35,16 @@ export class ReservationController {
   @ApiNotFoundResponse({
     schema: {
       properties: {
+        code: { type: 'string', example: ErrorCode.TICKET_NOT_FOUND },
         message: { type: 'string', example: 'Some tickets not found' },
-        error: {
-          type: 'string',
-          example: 'Not Found',
-        },
-        statusCode: {
-          type: 'string',
-          example: 404,
-        },
       },
     },
   })
   @ApiBadRequestResponse({
     schema: {
       properties: {
+        code: { type: 'string', example: ErrorCode.TICKET_NOT_AVAILABLE },
         message: { type: 'string', example: 'Some tickets are not available' },
-        error: {
-          type: 'string',
-          example: 'Bad Request',
-        },
-        statusCode: {
-          type: 'string',
-          example: 400,
-        },
       },
     },
   })
@@ -67,7 +54,7 @@ export class ReservationController {
   ) {
     const customer = await this.customersService.findByUserId(req.user!.sub);
     if (!customer) {
-      throw new UnauthorizedException('User needs be a customer');
+      throw new ForbiddenException({ code: ErrorCode.AUTH_FORBIDDEN });
     }
     return this.reservationService.create(createReservationDto, customer.id);
   }

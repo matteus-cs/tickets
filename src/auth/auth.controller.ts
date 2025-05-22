@@ -17,6 +17,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
+import { ErrorCode } from '@/error-code';
 
 @Controller('auth')
 export class AuthController {
@@ -34,7 +35,17 @@ export class AuthController {
   @ApiOkResponse({
     schema: { properties: { accessToken: { type: 'string' } } },
   })
-  @ApiUnauthorizedResponse({ description: 'incorrect e-mail or password' })
+  @ApiUnauthorizedResponse({
+    description: 'incorrect e-mail or password',
+    schema: {
+      properties: {
+        code: {
+          type: 'string',
+          example: ErrorCode.AUTH_UNAUTHORIZED,
+        },
+      },
+    },
+  })
   signIn(@Body() signInDto: SignInDto) {
     return this.authService.signIn(signInDto.email, signInDto.password);
   }

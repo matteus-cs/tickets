@@ -7,6 +7,7 @@ import { CreateCustomerDto } from './dto/create-customer.dto';
 import { Customer } from './entities/customer.entity';
 import { User } from '@/users/entities/user.entity';
 import { CustomerRepository } from '@/repositories/customer.repository';
+import { ErrorCode } from '@/error-code';
 
 @Injectable()
 export class CustomersService {
@@ -17,7 +18,7 @@ export class CustomersService {
       email,
     });
     if (userAlreadyExists) {
-      throw new BadRequestException('Customer already Exists');
+      throw new BadRequestException({ code: ErrorCode.CUSTOMER_ALREADY_EXIST });
     }
     const date = new Date();
     const user = User.create({ name, email, password, createdAt: date });
@@ -30,7 +31,7 @@ export class CustomersService {
   async findByUserId(userId: number) {
     const customer = await this.customerRepository.findByUser({ id: userId });
     if (!customer) {
-      throw new NotFoundException();
+      throw new NotFoundException({ code: ErrorCode.CUSTOMER_NOT_FOUND });
     }
     return customer;
   }

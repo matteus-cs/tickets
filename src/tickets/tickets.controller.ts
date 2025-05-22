@@ -27,6 +27,7 @@ import {
 } from './dto/request-tickets.dto';
 import { payloadType } from '@/auth/auth.service';
 import { User } from '@/decorators/user.decorator';
+import { ErrorCode } from '@/error-code';
 
 @Controller('events/:eventId/tickets')
 export class TicketsController {
@@ -40,7 +41,17 @@ export class TicketsController {
   @ApiBearerAuth()
   @ApiBody({ type: [CreateTicketDto] })
   @ApiResponse({ status: 201, description: 'Successfully created' })
-  @ApiForbiddenResponse({ description: 'When a user is not a partner' })
+  @ApiForbiddenResponse({
+    description: 'When a user is not a partner',
+    schema: {
+      properties: {
+        code: {
+          type: 'string',
+          example: ErrorCode.AUTH_FORBIDDEN,
+        },
+      },
+    },
+  })
   create(
     @Body() createTicketDto: CreateTicketDto[],
     @User() user: payloadType,
@@ -71,13 +82,17 @@ export class TicketsController {
   })
   @ApiForbiddenResponse({
     schema: {
-      properties: { statusCode: { type: 'number', example: 403 } },
+      properties: {
+        code: { type: 'string', example: ErrorCode.AUTH_FORBIDDEN },
+      },
     },
     description: 'is not the owner of the ticket',
   })
   @ApiUnprocessableEntityResponse({
     schema: {
-      properties: { statusCode: { type: 'number', example: 422 } },
+      properties: {
+        code: { type: 'string', example: ErrorCode.PURCHASE_INVALID_STATE },
+      },
     },
     description: 'when ticket not sold or payment not made',
   })
@@ -91,7 +106,7 @@ export class TicketsController {
       id: user.sub,
     });
     if (!customer) {
-      throw new ForbiddenException();
+      throw new ForbiddenException({ code: ErrorCode.AUTH_FORBIDDEN });
     }
 
     return await this.ticketsService.createTicketHash(

@@ -2,6 +2,7 @@ import { Controller, Post, Body } from '@nestjs/common';
 import { CustomersService } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { ApiBadRequestResponse, ApiResponse } from '@nestjs/swagger';
+import { ErrorCode } from '@/error-code';
 
 @Controller('customers')
 export class CustomersController {
@@ -14,17 +15,9 @@ export class CustomersController {
       description:
         'When you try to create a partner with an email already registered',
       properties: {
-        message: {
+        code: {
           type: 'string',
-          example: 'partner already exists',
-        },
-        error: {
-          type: 'string',
-          example: 'Bad Request',
-        },
-        statusCode: {
-          type: 'string',
-          example: 400,
+          example: ErrorCode.CUSTOMER_ALREADY_EXIST,
         },
       },
     },

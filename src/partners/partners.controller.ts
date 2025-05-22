@@ -4,10 +4,10 @@ import {
   Body,
   UseGuards,
   Get,
-  UnauthorizedException,
   Req,
   Param,
   Query,
+  ForbiddenException,
 } from '@nestjs/common';
 import { PartnersService } from './partners.service';
 import { CreatePartnerDto } from './dto/create-partner.dto';
@@ -17,15 +17,16 @@ import { CreateEventDto } from '@/events/dto/create-event.dto';
 import { payloadType } from '@/auth/auth.service';
 import {
   ApiBearerAuth,
+  ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiResponse,
-  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { TicketsService } from '@/tickets/tickets.service';
 import { Request } from 'express';
 import { ByEventIdDto } from '@/events/dto/request-event.dto';
 import { User } from '@/decorators/user.decorator';
 import { ValidateTicketQueryDto } from './dto/request.partner.dto';
+import { ErrorCode } from '@/error-code';
 
 @Controller('partners')
 export class PartnersController {
@@ -47,13 +48,9 @@ export class PartnersController {
           type: 'string',
           example: 'partner already exists',
         },
-        error: {
+        code: {
           type: 'string',
-          example: 'Bad Request',
-        },
-        statusCode: {
-          type: 'string',
-          example: 400,
+          example: ErrorCode.PARTNER_ALREADY_EXIST,
         },
       },
     },
@@ -66,7 +63,17 @@ export class PartnersController {
   @Post('events')
   @ApiBearerAuth()
   @ApiResponse({ status: 201, description: 'Successfully created' })
-  @ApiUnauthorizedResponse({ description: 'When a user is not a partner' })
+  @ApiForbiddenResponse({
+    description: 'When a user is not a partner',
+    schema: {
+      properties: {
+        code: {
+          type: 'string',
+          example: ErrorCode.AUTH_FORBIDDEN,
+        },
+      },
+    },
+  })
   createEvents(@Body() createEventDto: CreateEventDto, @Req() req: Request) {
     return this.eventsService.create(createEventDto, req.user as payloadType);
   }
@@ -92,11 +99,21 @@ export class PartnersController {
       },
     },
   })
-  @ApiUnauthorizedResponse({ description: 'When a user is not a partner' })
+  @ApiForbiddenResponse({
+    description: 'When a user is not a partner',
+    schema: {
+      properties: {
+        code: {
+          type: 'string',
+          example: ErrorCode.AUTH_FORBIDDEN,
+        },
+      },
+    },
+  })
   async findEventAll(@Req() req: Request) {
     const partner = await this.partnersService.findByUserId(req.user!.sub);
     if (!partner) {
-      throw new UnauthorizedException();
+      throw new ForbiddenException({ code: ErrorCode.AUTH_FORBIDDEN });
     }
     return this.eventsService.findAll(partner.id);
   }
@@ -119,7 +136,17 @@ export class PartnersController {
       required: ['false'],
     },
   })
-  @ApiUnauthorizedResponse({ description: 'When a user is not a partner' })
+  @ApiForbiddenResponse({
+    description: 'When a user is not a partner',
+    schema: {
+      properties: {
+        code: {
+          type: 'string',
+          example: ErrorCode.AUTH_FORBIDDEN,
+        },
+      },
+    },
+  })
   @ApiNotFoundResponse({ description: 'When event not found by passed id' })
   async findEventById(
     @User() user: payloadType,
@@ -127,7 +154,7 @@ export class PartnersController {
   ) {
     const partner = await this.partnersService.findByUserId(user.sub);
     if (!partner) {
-      throw new UnauthorizedException();
+      throw new ForbiddenException({ code: ErrorCode.AUTH_FORBIDDEN });
     }
 
     return this.eventsService.findById(params.eventId, partner.id);
@@ -145,6 +172,17 @@ export class PartnersController {
       },
     },
   })
+  @ApiForbiddenResponse({
+    description: 'When a user is not a partner',
+    schema: {
+      properties: {
+        code: {
+          type: 'string',
+          example: ErrorCode.AUTH_FORBIDDEN,
+        },
+      },
+    },
+  })
   async validateTicket(
     @User() user: payloadType,
     @Param() params: ByEventIdDto,
@@ -152,7 +190,7 @@ export class PartnersController {
   ) {
     const partner = await this.partnersService.findByUserId(user.sub);
     if (!partner) {
-      throw new UnauthorizedException();
+      throw new ForbiddenException({ code: ErrorCode.AUTH_FORBIDDEN });
     }
 
     const isValid = await this.ticketService.validate(
